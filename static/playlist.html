@@ -1,0 +1,225 @@
+<html>
+<head>
+    <title>MVP</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="shortcut icon" href="#" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <!--
+    Here we load the framework core source file, followed by the packages which compose the player .
+  -->
+
+    <script type="text/javascript" src="../lib/bundles/phoenix-core.js"></script>
+    <script type="text/javascript" src="../lib/packages/phoenix-data.package.js"></script>
+    <script type="text/javascript" src="../lib/packages/phoenix-hls.package.js"></script>
+    <script type="text/javascript" src="../lib/packages/phoenix-network.package.js"></script>
+    <script type="text/javascript" src="../lib/packages/phoenix-presentation.package.js"></script>
+    <script type="text/javascript" src="../lib/packages/phoenix-source.package.js"></script>
+    <script type="text/javascript" src="../lib/packages/phoenix-sources-api.package.js"></script>
+    <script type="text/javascript" src="../out/playlist.package.js"></script>
+
+    <style>
+        .container .row {
+            padding: 1em 0;
+        }
+
+        .form-select {
+            font-size: 1.4em;
+        }
+
+        .btn-group {
+            margin-top: 0.5em;
+            display: flex !important;
+        }
+
+        .logo {
+            float: left;
+            margin-right: 1em;
+        }
+
+        .playlist-remove-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<datalist id="available-sources-list"></datalist>
+
+<div class="container">
+    <div class="row">
+        <div class="col col-sm">
+            <img class="logo" src="./bitmovin-player-x-gradient.png" width="50">
+            <h1>Phoenix player demo</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm">
+            <div class="input-group mb-3">
+                <input id="source-url-input" type="text" class="form-control" list="available-sources-list"
+                       placeholder="HLS Source URL" aria-label="Source URL" aria-describedby="basic-addon2">
+                <button class="btn btn-outline-success" id="add-source-button" onclick="addSource()"><i
+                        class="bi bi-plus"></i> Add Source
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-8 col-xl-9">
+            <div class="row">
+                <div class="col">
+                    <div id="player-container"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="btn-group" role="group" aria-label="Player controls">
+                        <button class="btn btn-outline-secondary" onclick="player.playlist.previous()"><i
+                                class="bi bi-skip-backward-fill"></i></button>
+                        <button class="btn btn-outline-secondary" onclick="playPause()"><i class="bi bi-play-fill"></i>
+                            <i class="bi bi-pause-fill"></i></button>
+                        <button class="btn btn-outline-secondary" onclick="muteUnmute()"><i
+                                class="bi bi-volume-mute-fill"></i></button>
+                        <button class="btn btn-outline-secondary" onclick="player.playlist.next()"><i
+                                class="bi bi-skip-forward-fill"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-12 col-xl-3">
+            <div class="row">
+                    <ul class="list-group" id="playlist-container"></ul>
+                </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    const playlistContainer = document.querySelector('#playlist-container');
+    const sourceUrlInput = document.querySelector('#source-url-input');
+    const availableSourcesList = document.querySelector('#available-sources-list');
+    const Player = bitmovin.phoenix.Player;
+    const fmp4WithVttSubtitles = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/fmp4-vtt-offset/master.m3u8';
+    const fmpMultipleAudioTracks = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/multi-audio/github2390/VideoWithMultipleAudioTracks/master.m3u8';
+    const tearsOfSteel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/tos/m3u8/index.m3u8';
+    const sintel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/sintel/m3u8/index.m3u8';
+    const fakeFmp4Live = 'https://storage.googleapis.com/shaka-live-assets/player-source.m3u8';
+    const streamsLiveStream = 'https://d1n9m42trkf55h.cloudfront.net/9d1725ee-4319-4381-abfd-4d07cadb9499/index.m3u8';
+    const bbbLlhlsFmp4 = 'https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8';
+    const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
+    const player = Player();
+
+
+    player.packages.add(bitmovin.phoenix['data'].default);
+    player.packages.add(bitmovin.phoenix['network'].default);
+    player.packages.add(bitmovin.phoenix['hls'].default);
+    player.packages.add(bitmovin.phoenix['presentation'].default);
+    player.packages.add(bitmovin.phoenix['source'].default);
+    player.packages.add(bitmovin.phoenix['sources-api'].default);
+
+    player.packages.add(bitmovin.phoenix['playlist'].default)
+
+    const allSourcesMap = {
+        'Sintel': sintel,
+        'Tears of Steel': tearsOfSteel,
+        'fMP4 with VTT subtitles': fmp4WithVttSubtitles,
+        'fMP4 with multiple audio tracks': fmpMultipleAudioTracks,
+        'Fake live fMP4 stream': fakeFmp4Live,
+        // 'Streams live stream': streamsLiveStream,
+        'Big Buck Bunny LL-HLS fMP4': bbbLlhlsFmp4,
+        'OvenMediaEngine LL-HLS fMP4': ovmLlhlsFmp4,
+    };
+
+    function getSourceName(url) {
+        return Object.keys(allSourcesMap).find(key => allSourcesMap[key] === url) || url;
+    }
+
+    function getActiveSources() {
+        return player.sources.list();
+    }
+
+    function getSourceUrl() {
+        return sourceUrlInput.value;
+    }
+
+    function updateActiveSources(data) {
+        playlistContainer.innerHTML = data.map(source => `
+             <li
+              class="list-group-item d-flex justify-content-between align-items-center ${source.isActive ? 'active' : ''}"
+              style="cursor: pointer"
+              onClick="player.playlist.activate('${source.url}')"
+              >
+                ${Object.keys(allSourcesMap).find(k => allSourcesMap[k] === source.url)}
+              <span class="badge badge-primary badge-pill playlist-remove-btn" onClick="removeSourceButtonCb('${source.url}')" style="color: ${source.isActive ? 'white' : 'black'}">x</span>
+            </li>
+        `).join('');
+    }
+
+    function removeSourceButtonCb(source) {
+        console.warn(source);
+        const sources = player.sources.list();
+
+        const matching = sources.find(src => src.url === source);
+        if (matching) {
+            player.sources.remove(matching);
+        }
+    }
+
+    function addSource() {
+        const sourceUrl = getSourceUrl();
+        if (!sourceUrl) return;
+
+        const playbackApi = player.sources.add(sourceUrl);
+
+        playbackApi.setLogLevel(1e9);
+        sourceUrlInput.value = '';
+    }
+
+    function updateAvailableSources() {
+        Object.values(allSourcesMap).forEach(sourceUrl => {
+            const option = document.createElement('option');
+
+            option.innerText = getSourceName(sourceUrl);
+            option.value = sourceUrl;
+            availableSourcesList.appendChild(option);
+        });
+    }
+
+    function playPause() {
+        const active = getActiveSources();
+        if (!active.length) {
+            return;
+        }
+
+        const video = document.querySelector('video');
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    }
+
+    function muteUnmute() {
+        const active = getActiveSources();
+        if (!active.length) {
+            return;
+        }
+
+        const video = document.querySelector('video');
+        video.muted = !video.muted;
+    }
+
+    function subscribeToSources() {
+        player.playlist.onSourcesChange(updateActiveSources);
+    }
+
+
+    (function main() {
+        updateAvailableSources();
+        subscribeToSources();
+    })();
+
+</script>
+</body>
+</html>

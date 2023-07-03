@@ -1,0 +1,312 @@
+<html>
+<head>
+  <title>Bitmovin Player Web X </title>
+
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link rel="shortcut icon" href="#" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+    <!--
+    Here we load the framework core source file, followed by the packages which compose the player .
+  -->
+
+  <script type="text/javascript" src="../lib/bundles/phoenix-core.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-data.package.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-hls.package.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-network.package.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-presentation.package.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-source.package.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-source-api.package.js"></script>
+  <script type="text/javascript" src="../lib/packages/phoenix-sources-api.package.js"></script>
+  <!--
+
+   Load the example package files
+
+  -->
+  <script type="text/javascript" src="../out/hello-world.package.js"></script>
+  <script type="text/javascript" src="../out/download-statistics.package.js"></script>
+  <script type="text/javascript" src="../out/buffer-range-observer.package.js"></script>
+  <script type="text/javascript" src="../out/network-inspector.package.js"></script>
+  <script type="text/javascript" src="../out/playback-state.package.js"></script>
+  <script type="text/javascript" src="../out/resize-tracker.package.js"></script>
+
+  <style>
+      .container .row {
+          padding: 1em 0;
+      }
+
+      .form-select {
+          font-size: 1.4em;
+      }
+
+      .btn-group {
+          margin-top: 0.5em;
+          display: flex !important;
+      }
+      .logo {
+          float: left;
+          margin-right: 1em;
+      }
+  </style>
+</head>
+<body>
+<datalist id="available-sources-list"></datalist>
+
+<div class="container">
+  <div class="row">
+    <div class="col col-sm">
+      <img class="logo" src="../static/bitmovin-player-x-gradient.png" width="50">
+      <h1>Player Web X demo</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm alert alert-info">
+      Click in the input box to choose a source, then click the "+Add Source" button to start playback. You can add multiple sources, they will appear in the list below.
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm">
+      <div class="input-group mb-3">
+        <input id="source-url-input" type="text" class="form-control" list="available-sources-list" placeholder="HLS Source URL" aria-label="Source URL" aria-describedby="basic-addon2">
+          <button class="btn btn-outline-success" id="add-source-button" onclick="addSource()"><i class="bi bi-plus"></i> Add Source</button>
+        </div>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-sm">
+        <div class="input-group-prepend">
+          <h3>Switch between active sources</h3>
+        </div>
+        <select class="form-select" multiple id="active-sources-list" size="5">
+        </select>
+      <div class="btn-group " role="group" aria-label="Player controls">
+        <button class="btn btn-primary btn-lg mx-auto" id="activate-source-button" onclick="activateSource()">Activate Source</button>
+        <button class="btn btn-warning btn-lg mx-auto" onclick="activateRandomSource()">Activate Random Source</button>
+        <button class="btn btn-danger btn-lg mx-auto" id="remove-source-button" onclick="removeSource()">Remove Source</button>
+      </div>
+      </div>
+  </div>
+  <div class="row">
+    <div class="col-sm alert alert-info">
+      Select a source above, then click "Activate Source" to switch to it. You can also switch to a random source, or remove one that you have selected.
+    </div>
+  </div>
+  <div class="row">
+    <div class="col col-sm">
+      <h3>Controls</h3>
+      <div class="btn-group" role="group" aria-label="Player controls">
+        <button class="btn btn-outline-secondary" onclick="seekRandom()">Random seek <img src="https://media2.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif?cid=6c09b952xzqeeh7q4oj45b0wvj7pm6kxpcfs5s98msozotmb&rid=giphy.gif&ct=g" width="25rem" height="25rem" /></button>
+        <button class="btn btn-outline-secondary" onclick="playPause()">Play/Pause <i class="bi bi-play-fill"></i> <i class="bi bi-pause-fill"></i></button>
+        <button class="btn btn-outline-secondary" onclick="muteUnmute()">Unmute/Mute <i class="bi bi-volume-down-fill"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm">
+      <div id="player-container"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  /**
+   * Instantiate the framework
+   */
+  const Player = bitmovin.phoenix.Player;
+  const player = Player();
+
+  /**
+   * Load the player packages into the framework.
+   */
+  console.log( 'adding packages');
+  player.packages.add(bitmovin.phoenix['data'].default);
+  player.packages.add(bitmovin.phoenix['network'].default);
+  player.packages.add(bitmovin.phoenix['hls'].default);
+  player.packages.add(bitmovin.phoenix['presentation'].default);
+  player.packages.add(bitmovin.phoenix['source'].default);
+  //player.packages.add(bitmovin.phoenix['source-api'].default);
+  player.packages.add(bitmovin.phoenix['sources-api'].default);
+
+  /**
+   * Uncomment one or more of the following lines (or run them in the console) to add the example packages that we loaded above to the player.
+   */
+
+  // player.packages.add(bitmovin.phoenix['hello-world'].default)
+  // player.packages.add(bitmovin.phoenix['buffer-range-observer'].default)
+  // player.packages.add(bitmovin.phoenix['network-inspector'].default)
+  // player.packages.add(bitmovin.phoenix['download-statistics'].default)
+  // player.packages.add(bitmovin.phoenix['playback-state'].default)
+  // player.packages.add(bitmovin.phoenix['resize-tracker'].default)
+  /**
+   * The following code sets up the interaction with the page. You can safely ignore it.
+   */
+
+  const activeSourcesList = document.querySelector('#active-sources-list');
+  const sourceUrlInput = document.querySelector('#source-url-input');
+  const availableSourcesList = document.querySelector('#available-sources-list');
+
+  const fmp4WithVttSubtitles = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/fmp4-vtt-offset/master.m3u8';
+  const fmpMultipleAudioTracks = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/multi-audio/github2390/VideoWithMultipleAudioTracks/master.m3u8';
+  const tearsOfSteel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/tos/m3u8/index.m3u8';
+  const sintel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/sintel/m3u8/index.m3u8';
+  const fakeFmp4Live = 'https://storage.googleapis.com/shaka-live-assets/player-source.m3u8';
+  const bbbLlhlsFmp4 = 'https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8';
+  const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
+
+  const allSourcesMap = {
+    'Sintel': sintel,
+    'Tears of Steel': tearsOfSteel,
+    'fMP4 with VTT subtitles': fmp4WithVttSubtitles,
+    'fMP4 with multiple audio tracks': fmpMultipleAudioTracks,
+    'Fake live fMP4 stream': fakeFmp4Live,
+    'Big Buck Bunny LL-HLS fMP4': bbbLlhlsFmp4,
+    'OvenMediaEngine LL-HLS fMP4': ovmLlhlsFmp4,
+  };
+
+  function getSourceName(url) {
+    return Object.keys(allSourcesMap).find(key => allSourcesMap[key] === url) || url;
+  }
+
+  function getActiveSources() {
+    return player.sources.list();
+  }
+
+  function getSourceUrl() {
+    return sourceUrlInput.value;
+  }
+
+  function updateActiveSources() {
+    const currentIndex = activeSourcesList.selectedIndex;
+    const activeSources = getActiveSources();
+
+    while (activeSourcesList.firstChild) {
+      activeSourcesList.removeChild(activeSourcesList.firstChild);
+    }
+
+    activeSources.forEach(source => {
+      const url = source.url;
+      const option = document.createElement('option');
+
+      option.innerText = getSourceName(url);
+      option.value = url;
+      activeSourcesList.appendChild(option);
+    });
+
+    activeSourcesList.selectedIndex = currentIndex < activeSourcesList.children.length
+      ? currentIndex
+      : activeSourcesList.children.length - 1;
+  }
+
+  function getSelectedSource() {
+    const selectedIndex = activeSourcesList.selectedIndex;
+    const activeSources = getActiveSources();
+
+    return selectedIndex === -1 || selectedIndex >= activeSources.length
+      ? undefined
+      : activeSources[selectedIndex];
+  }
+
+  function addSource() {
+    const sourceUrl = getSourceUrl();
+    if (!sourceUrl) return;
+
+    const playbackApi = player.sources.add(sourceUrl);
+
+    updateActiveSources();
+    playbackApi.setLogLevel(1e9);
+    activeSourcesList.selectedIndex = activeSourcesList.children.length - 1;
+    sourceUrlInput.value = '';
+  }
+
+  function removeSource() {
+    const selectedSource = getSelectedSource();
+
+    if (!selectedSource) {
+      return;
+    }
+
+    player.sources.remove(selectedSource);
+    updateActiveSources();
+  }
+
+  function activateSource() {
+    const selectedSource = getSelectedSource();
+
+    if (!selectedSource) {
+      return;
+    }
+
+    player.sources.setActive(selectedSource);
+  }
+
+  function updateAvailableSources() {
+    Object.values(allSourcesMap).forEach(sourceUrl => {
+      const option = document.createElement('option');
+
+      option.innerText = getSourceName(sourceUrl);
+      option.value = sourceUrl;
+      availableSourcesList.appendChild(option);
+    });
+  }
+
+  function activateRandomSource() {
+    const numActiveSources = activeSourcesList.children.length;
+
+    let sourceIndex = numActiveSources < 2
+      ? 0
+      : Math.round(Math.random() * (numActiveSources - 2));
+
+    if (numActiveSources > 1 && sourceIndex >= activeSourcesList.selectedIndex) {
+      sourceIndex++;
+    }
+
+    activeSourcesList.selectedIndex = sourceIndex;
+    activateSource();
+  }
+
+  function seekRandom() {
+    const video = document.querySelector('video');
+    const seekTarget = video.duration * Math.random();
+
+    console.debug(`Seeking to ${seekTarget}`);
+
+    video.currentTime = seekTarget;
+  }
+
+  function playPause() {
+    const active = getActiveSources();
+    if (!active.length) {
+      return;
+    }
+
+    const video = document.querySelector('video');
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  }
+
+  function muteUnmute() {
+    const active = getActiveSources();
+    if (!active.length) {
+      return;
+    }
+
+    const video = document.querySelector('video');
+    video.muted = !video.muted;
+  }
+
+  (function main() {
+    updateAvailableSources();
+    updateActiveSources();
+  })();
+
+</script>
+</body>
+</html>
