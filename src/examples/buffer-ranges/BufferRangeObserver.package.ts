@@ -1,10 +1,12 @@
-import type { EmptyObject } from '../../../types';
-import type { SourceStateAtom } from '../../../types/atoms/SourceStateAtom';
-import type { Logger } from '../../../types/components/Logger';
-import type { ContextHaving, ContextWithState } from '../../../types/framework/ExecutionContext';
-import type { CoreEffects } from '../../../types/packages/Core.package';
-import { ComponentName } from '../../framework-exports/Components';
-import { createPackage } from '../../framework-exports/Package';
+import type { ContextHaving } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
+import { createPackage } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { EmptyObject } from '@bitmovin/player-web-x/types/BaseTypes';
+import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
+import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
+import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+
 import { BufferRangeSubscriber } from './BufferRangeSubscriber';
 
 type Dependencies = {
@@ -21,15 +23,15 @@ export type BufferRangeObserverContext = ContextHaving<Dependencies, Exports, Co
 
 export const BufferRangeObserverPackage = createPackage<Dependencies, Exports, Api>(
   'buffer-range-observer-package',
-  (apiManager, baseContext) => {
-    const { StateEffectFactory } = baseContext.registry.get(ComponentName.CoreEffects);
-    const context = baseContext.using(StateEffectFactory);
-    const sourceState = context.registry.get(ComponentName.SourceState);
+  (_, baseContext) => {
+    const { StateEffectFactory, EventListenerEffectFactory } = baseContext.registry.get('core-effects');
+    const context = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
+    const sourceState = context.registry.get('source-state');
     const { state } = context.effects;
 
-    state.subscribe(context, sourceState.dataRanges.renderedRanges, BufferRangeSubscriber);
+    state.subscribe(context, sourceState.dataRanges, BufferRangeSubscriber);
   },
-  [ComponentName.CoreEffects, ComponentName.SourceState],
+  ['core-effects', 'source-state'],
 );
 
 export default BufferRangeObserverPackage;

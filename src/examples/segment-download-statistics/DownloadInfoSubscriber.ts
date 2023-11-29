@@ -1,9 +1,10 @@
-import { createPipeline } from '../../framework-exports/Pipeline';
+import { createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
+
 import { CustomComponentName } from './CustomComponents';
 import type { DownloadInfoAtom } from './DownloadInfoAtom';
 import type { DownloadStatisticsContext } from './DownloadStatistics.package';
 
-export const DownloadInfoSubscriber = createPipeline(
+export const DownloadInfoSubscriber = createTask(
   'download-info-subscriber',
   (downloadInfo: DownloadInfoAtom, context: DownloadStatisticsContext) => {
     const downloadStatisticsAtom = context.registry.get(CustomComponentName.DownloadStatisticsAtom);

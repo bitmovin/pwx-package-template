@@ -1,14 +1,13 @@
-import type { SourceStateAtom } from '../../../types/atoms/SourceStateAtom';
-import type { MyApi } from '../../../types/bundles/Types';
-import type { Logger } from '../../../types/components/Logger';
-import type { StoreEffectFactory } from '../../../types/framework/Effects';
-import type { ContextHaving, ContextUsing, ContextWithState } from '../../../types/framework/ExecutionContext';
-import type { CoreEffects } from '../../../types/packages/Core.package';
-import { ComponentName } from '../../framework-exports/Components';
-import { createPackage } from '../../framework-exports/Package';
-import { createPipeline } from '../../framework-exports/Pipeline';
-import type { EventListenerEffect } from './EventListenerEffectFactory';
-import { EventListenerEffectFactory } from './EventListenerEffectFactory';
+import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
+import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { MyApi } from '@bitmovin/player-web-x/types/bundles/Types';
+import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
+import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/framework/core/core/state/StoreEffectFactory';
+import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
+import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+
 import type { PlaybackStateAtom } from './PlaybackStateAtom';
 import { createPlaybackStateAtom, Playback } from './PlaybackStateAtom';
 import type { PlaybackStatePackageExports } from './Types';
@@ -33,7 +32,6 @@ export type PlaybackStateContext = ContextHaving<
     [
       StoreEffectFactory<'playbackState', PlaybackStateAtom>,
       StoreEffectFactory<'videoElementState', VideoElementStateAtom>,
-      EventListenerEffect,
     ],
     ContextWithState
   >
@@ -48,8 +46,9 @@ export type PlaybackStateContext = ContextHaving<
 export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePackageExports, MyApi>(
   'playback-state-package',
   (apiManager, baseContext) => {
-    const { StateEffectFactory, StoreEffectFactory } = baseContext.registry.get(ComponentName.CoreEffects);
-    const contextWithState = baseContext.using(StateEffectFactory);
+    const { StateEffectFactory, StoreEffectFactory, EventListenerEffectFactory } =
+      baseContext.registry.get('core-effects');
+    const contextWithState = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
     const playbackStateAtom = createPlaybackStateAtom(contextWithState);
     // Create videoElementStateAtom to be able to subscribe on videoElement being set or unset
     const videoElementState = createVideoElementStateAtom(contextWithState);
@@ -61,7 +60,7 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
       .using(StoreEffectFactory('videoElementState', videoElementState))
       .using(EventListenerEffectFactory);
 
-    const sourceState = baseContext.registry.get(ComponentName.SourceState);
+    const sourceState = baseContext.registry.get('source-state');
     const { state } = contextWithPlaybackState.effects;
 
     // Subscribe to video element being set or unset, and trigger `VideoElementSubscriber`
@@ -79,8 +78,8 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
     state.subscribe(
       contextWithPlaybackState,
       playbackStateAtom,
-      createPipeline('playback-state-subscriber', (playbackState: PlaybackStateAtom, context: PlaybackStateContext) => {
-        const logger = context.registry.get(ComponentName.Logger);
+      createTask('playback-state-subscriber', (playbackState: PlaybackStateAtom, context: PlaybackStateContext) => {
+        const logger = context.registry.get('logger');
 
         if (playbackState.state === Playback.Suspended) {
           logger.log(`[Playback suspended]: ${sourceState.url}`);
@@ -96,13 +95,13 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
       }),
     );
   },
-  [ComponentName.CoreEffects, ComponentName.SourceState, ComponentName.Logger],
+  ['core-effects', 'source-state', 'logger'],
 
-  // Package is considered a `Pipeline`, but we do not need to return loop in it, as it will by default it will add
+  // Package is considered a `Task`, but we do not need to return loop in it, as it will by default it will add
   // one more step that returns loop
 );
 
-const VideoElementSubscriber = createPipeline(
+const VideoElementSubscriber = createTask(
   'video-element-subscriber',
   (videoElementState: VideoElementStateAtom, context: PlaybackStateContext) => {
     const video = videoElementState.element;
@@ -130,24 +129,25 @@ const VideoElementSubscriber = createPipeline(
     events.subscribe(video, 'pause', () => state.dispatch(playbackState.onPaused));
     events.subscribe(video, 'ended', () => state.dispatch(playbackState.onEnded));
 
-    // Returning loop ensures this pipeline never finishes running until it is terminated by the parent.
+    // Returning loop ensures this task never finishes running until it is terminated by the parent.
     // If it had finished running, it would have removed subscribers above, as they are children of this thread
-    // which was started with this pipeline.
+    // which was started with this task.
     return context.effects.loop(context.abortSignal);
   },
 );
 
-const SourceStateChangeSubscriber = createPipeline(
+const SourceStateChangeSubscriber = createTask(
   'source-state-change-subscriber',
   (source: SourceStateAtom, context: PlaybackStateContext) => {
     const { state, store } = context.effects;
     const { videoElementState, playbackState } = store;
+    const video = source.video.element;
 
-    state.dispatch(videoElementState.set, source.video);
+    state.dispatch(videoElementState.set, video);
 
-    if (source.video !== undefined) {
+    if (video !== undefined) {
       state.dispatch(playbackState.onResume);
-      state.dispatch(playbackState.onPlaybackRateChange, source.video.playbackRate);
+      state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate);
     } else {
       state.dispatch(playbackState.onSuspended);
     }

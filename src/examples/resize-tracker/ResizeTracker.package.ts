@@ -1,12 +1,13 @@
-import type { SourceStateAtom } from '../../../types/atoms/SourceStateAtom';
-import type { MyApi } from '../../../types/bundles/Types';
-import type { Logger } from '../../../types/components/Logger';
-import type { StoreEffectFactory } from '../../../types/framework/Effects';
-import type { ContextHaving, ContextUsing, ContextWithState } from '../../../types/framework/ExecutionContext';
-import type { CoreEffects } from '../../../types/packages/Core.package';
-import { ComponentName } from '../../framework-exports/Components';
-import { createPackage } from '../../framework-exports/Package';
-import { createPipeline } from '../../framework-exports/Pipeline';
+import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
+import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { MyApi } from '@bitmovin/player-web-x/types/bundles/Types';
+import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
+import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/framework/core/core/state/StoreEffectFactory';
+import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
+import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+
 import type { ResizeObserverEffect } from './ResizeObserverEffectFactory';
 import { ResizeObserverEffectFactory } from './ResizeObserverEffectFactory';
 import type { ResizeTrackerStateAtom } from './ResizeTrackerStateAtom';
@@ -44,9 +45,10 @@ export type VideoStateContext = ContextHaving<
 export const ResizeTrackerPackage = createPackage<Dependencies, ResizeTrackerExports, MyApi>(
   'resize-tracker-package',
   (apiManager, baseContext) => {
-    const { StateEffectFactory, StoreEffectFactory } = baseContext.registry.get(ComponentName.CoreEffects);
+    const { StateEffectFactory, StoreEffectFactory, EventListenerEffectFactory } =
+      baseContext.registry.get('core-effects');
 
-    const contextWithState = baseContext.using(StateEffectFactory);
+    const contextWithState = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
     const videoElementState = createVideoElementStateAtom(contextWithState);
     const resizeTrackerState = createResizeTrackerStateAtom(contextWithState);
 
@@ -55,18 +57,18 @@ export const ResizeTrackerPackage = createPackage<Dependencies, ResizeTrackerExp
       .using(StoreEffectFactory('resizeTrackerState', resizeTrackerState))
       .using(ResizeObserverEffectFactory);
 
-    baseContext.registry.set(ResizeTrackerExportNames.ResizeTrackerStateAtom, resizeTrackerState);
+    baseContext.registry.set('resize-tracker-state-atom', resizeTrackerState);
 
-    const sourceState = baseContext.registry.get(ComponentName.SourceState);
+    const sourceState = baseContext.registry.get('source-state');
     const { state } = contextWithVideoState.effects;
 
     state.subscribe(contextWithVideoState, videoElementState, VideoElementSubscriber);
     state.subscribe(contextWithVideoState, sourceState, SourceStateChangeSubscriber);
   },
-  [ComponentName.CoreEffects, ComponentName.SourceState, ComponentName.Logger],
+  ['core-effects', 'source-state', 'logger'],
 );
 
-const VideoElementSubscriber = createPipeline(
+const VideoElementSubscriber = createTask(
   'video-element-subscriber',
   (videoElementState: VideoElementStateAtom, context: VideoStateContext) => {
     const video = videoElementState.element;
@@ -78,7 +80,7 @@ const VideoElementSubscriber = createPipeline(
     const { state, store, resize } = context.effects;
     const { resizeTrackerState } = store;
 
-    const logger = context.registry.get(ComponentName.Logger);
+    const logger = context.registry.get('logger');
 
     resize.subscribe(video, entry => {
       logger.log('[RT]', entry);
@@ -89,13 +91,13 @@ const VideoElementSubscriber = createPipeline(
   },
 );
 
-const SourceStateChangeSubscriber = createPipeline(
+const SourceStateChangeSubscriber = createTask(
   'source-state-change-subscriber',
   (source: SourceStateAtom, context: VideoStateContext) => {
     const { state, store } = context.effects;
     const { videoElementState } = store;
 
-    state.dispatch(videoElementState.set, source.video);
+    state.dispatch(videoElementState.set, source.video.element);
 
     return context.effects.loop(context.abortSignal);
   },

@@ -1,14 +1,15 @@
-import type { EmptyObject } from '../../../types';
-import type { ArrayAtom } from '../../../types/atoms/ArrayStateAtom';
-import type { SourceStateAtom } from '../../../types/atoms/SourceStateAtom';
-import type { Logger } from '../../../types/components/Logger';
-import type { ContextWithState } from '../../../types/framework/ExecutionContext';
-import type { CoreEffects, CoreStateAtoms } from '../../../types/packages/Core.package';
-import type { PlayerAndSourcesApi } from '../../../types/packages/SourcesApi.package';
-import { ComponentName } from '../../framework-exports/Components';
-import { createPackage } from '../../framework-exports/Package';
-import { createPipeline } from '../../framework-exports/Pipeline';
-import { SourcesApiExportNames } from '../../framework-exports/SourcesApi';
+import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { EmptyObject } from '@bitmovin/player-web-x/types/BaseTypes';
+import type { CoreEffects, CoreStateAtoms } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
+import type { ArrayAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/ArrayStateAtom';
+import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
+import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
+import type {
+  PlayerAndSourcesApi,
+  SourceApiExportNames,
+} from '@bitmovin/player-web-x/types/framework/core/sources-api/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
 
 export const PlaylistPackageThreadName = 'playlist-package-thread';
 
@@ -16,25 +17,25 @@ export type PlaylistPackageDependencies = {
   [ComponentName.Logger]: Logger;
   [ComponentName.CoreEffects]: CoreEffects;
   [ComponentName.CoreStateAtoms]: CoreStateAtoms;
-  [SourcesApiExportNames.SourceList]: ArrayAtom<SourceStateAtom>;
+  [SourceApiExportNames.SourceList]: ArrayAtom<SourceStateAtom>;
 };
 
 const sourceVideoChange = (_: ArrayAtom<SourceStateAtom>, api: PlaylistAPI) =>
-  createPipeline('playlist-source-change-on-end', function (data: SourceStateAtom, ctx: ContextWithState) {
+  createTask('playlist-source-change-on-end', function (data: SourceStateAtom, ctx: ContextWithState) {
     const onEnded = () => {
-      if (data.video) {
-        if (data.video.currentTime > 0 && data.video.duration > 0) {
+      if (data.video.element) {
+        if (data.video.element.currentTime > 0 && data.video.element.duration > 0) {
           api.playlist.next();
         }
       }
     };
 
-    if (data.video && data.isActive) {
-      data.video.addEventListener('ended', onEnded);
+    if (data.video.element && data.isActive) {
+      data.video.element.addEventListener('ended', onEnded);
     }
 
     const onAbort = () => {
-      data.video?.removeEventListener('ended', onEnded);
+      data.video.element?.removeEventListener('ended', onEnded);
       ctx.abortSignal.removeEventListener('abort', onAbort);
     };
 
@@ -43,8 +44,8 @@ const sourceVideoChange = (_: ArrayAtom<SourceStateAtom>, api: PlaylistAPI) =>
     return ctx.effects.loop(ctx.abortSignal);
   });
 
-const sourcesChangePipeline = (api: PlaylistAPI) =>
-  createPipeline(PlaylistPackageThreadName, function (sources: ArrayAtom<SourceStateAtom>, ctx: ContextWithState) {
+const sourcesChangeTask = (api: PlaylistAPI) =>
+  createTask(PlaylistPackageThreadName, function (sources: ArrayAtom<SourceStateAtom>, ctx: ContextWithState) {
     sources.forEach(source => {
       ctx.effects.state.subscribe(ctx, source, sourceVideoChange(sources, api), () => true);
     });
@@ -64,23 +65,18 @@ type PlaylistAPI = PlayerAndSourcesApi & {
 export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyObject, PlaylistAPI>(
   'playlist-package',
   (apiManager, ctx) => {
-    const logger = ctx.registry.get(ComponentName.Logger);
-    const sourcesState = ctx.registry.get(SourcesApiExportNames.SourceList);
-    const { StateEffectFactory } = ctx.registry.get(ComponentName.CoreEffects);
-    const sourcesContext = ctx.using(StateEffectFactory);
+    const logger = ctx.registry.get('logger');
+    const sourcesState = ctx.registry.get('source-list');
+    const { StateEffectFactory, EventListenerEffectFactory } = ctx.registry.get('core-effects');
+    const sourcesContext = ctx.using(StateEffectFactory).using(EventListenerEffectFactory);
 
     logger.log('Using Playlist package');
 
     apiManager.set('playlist', createPlaylistAPI(sourcesContext, sourcesState, apiManager.api));
 
-    sourcesContext.effects.state.subscribe(
-      sourcesContext,
-      sourcesState,
-      sourcesChangePipeline(apiManager.api),
-      () => true,
-    );
+    sourcesContext.effects.state.subscribe(sourcesContext, sourcesState, sourcesChangeTask(apiManager.api), () => true);
   },
-  [ComponentName.Logger, ComponentName.CoreStateAtoms, SourcesApiExportNames.SourceList, ComponentName.CoreEffects],
+  ['logger', 'core-state-atoms', 'source-list', 'core-effects'],
 );
 
 function createPlaylistAPI(ctx: ContextWithState, sources: ArrayAtom<SourceStateAtom>, api: PlaylistAPI) {
@@ -97,12 +93,12 @@ function createPlaylistAPI(ctx: ContextWithState, sources: ArrayAtom<SourceState
       return ctx.effects.state.subscribe(
         ctx,
         sources,
-        createPipeline('onSourcesChangeAPI', function (data: ArrayAtom<SourceStateAtom>, _: typeof ctx) {
+        createTask('onSourcesChangeAPI', function (data: ArrayAtom<SourceStateAtom>, _: typeof ctx) {
           sources.forEach(source => {
             ctx.effects.state.subscribe(
               ctx,
               source,
-              createPipeline('onSourceChangeAPI', function (_: SourceStateAtom, __: typeof ctx) {
+              createTask('onSourceChangeAPI', function (_: SourceStateAtom, __: typeof ctx) {
                 callback(sources);
               }),
             );

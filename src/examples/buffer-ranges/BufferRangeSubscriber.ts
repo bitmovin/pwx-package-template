@@ -1,9 +1,11 @@
-import type { RenderedRangesAtom, TimeRange } from '../../../types/atoms/SourceStateAtom';
-import { ComponentName } from '../../framework-exports/Components';
-import { createPipeline } from '../../framework-exports/Pipeline';
+import { createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { MediaType } from '@bitmovin/player-web-x/types/framework/core/core/Constants';
+import type { DataRangesAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/data-ranges/DataRangesAtom';
+import type { TimeRange } from '@bitmovin/player-web-x/types/framework/core/core/state/track/TrackAtom';
+
 import type { BufferRangeObserverContext } from './BufferRangeObserver.package';
 
-function stringifyTimeRanges(ranges: TimeRange[]): string {
+function stringifyTimeRanges(ranges: readonly TimeRange[]): string {
   if (ranges.length === 0) {
     return '[]';
   }
@@ -13,25 +15,24 @@ function stringifyTimeRanges(ranges: TimeRange[]): string {
   );
 }
 
-function prettyPrintBufferRanges(ranges: RenderedRangesAtom) {
-  const rangeTypes = ['audio', 'video', 'subtitles', 'thumbnails'] as const;
+function prettyPrintBufferRanges(ranges: DataRangesAtom) {
   const rangeStrings = [] as string[];
+  const mediaIds = Object.keys(ranges.media);
 
-  for (const rangeType of rangeTypes) {
-    if (!(rangeType in ranges)) {
-      continue;
-    }
+  for (const mediaId of mediaIds) {
+    const mediaType = mediaId.split(':')[0] as MediaType;
+    const rangesOfType = ranges.media[mediaId].ranges;
 
-    rangeStrings.push(`${rangeType}${stringifyTimeRanges(ranges[rangeType] ?? [])}`);
+    rangeStrings.push(`${mediaType}${stringifyTimeRanges(rangesOfType)}`);
   }
 
   return rangeStrings.join('\n');
 }
 
-export const BufferRangeSubscriber = createPipeline(
+export const BufferRangeSubscriber = createTask(
   'buffer-range-observer',
-  (ranges: RenderedRangesAtom, context: BufferRangeObserverContext) => {
-    const logger = context.registry.get(ComponentName.Logger);
+  (ranges: DataRangesAtom, context: BufferRangeObserverContext) => {
+    const logger = context.registry.get('logger');
 
     logger.warn(`Buffered ranges:\n${prettyPrintBufferRanges(ranges)}`);
   },

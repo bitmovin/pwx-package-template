@@ -1,12 +1,11 @@
-import type { EmptyObject } from '../../../types';
-import type { Logger } from '../../../types/components/Logger';
-import { ComponentName } from '../../framework-exports/Components';
-import { createPackage } from '../../framework-exports/Package';
-
 /**
  * Packages are defined by their dependencies, exports and the API they expose.
  * This package will print the string `Hello World` to the console.
  */
+import { createPackage } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { EmptyObject } from '@bitmovin/player-web-x/types/BaseTypes';
+import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
+import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
 
 // In order to do so, it needs to depend on the `Logger` of the player.
 // By convention, we define dependencies of a Package in a `*Dependencies` type.
@@ -44,12 +43,12 @@ export const HelloWorldPackage = createPackage<Dependencies, Exports, Api>(
     // `Registry`. However, components that are exposed by a package can also
     // be acquired from the `Registry`, but trying to do so before they have
     // been exposed will cause an error to be thrown.
-    const logger = context.registry.get(ComponentName.Logger);
+    const logger = context.registry.get('logger' as ComponentName.Logger);
 
     // Hello World! :)
     logger.warn('Hello World!');
   },
-  [ComponentName.Logger],
+  ['logger' as ComponentName.Logger],
 );
 
 // Finally, we also want to use a default export so that all packages can be

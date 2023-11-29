@@ -1,13 +1,12 @@
-import type { Unsubscribe } from '../../../types';
-import type { AnyExecutionContext } from '../../../types/framework/ExecutionContext';
-import type { Step } from '../../../types/framework/Pipeline';
-import { createEffectFactory } from '../../framework-exports/EffectFactory';
-import { createPipeline } from '../../framework-exports/Pipeline';
+import type { Unsubscribe } from '@bitmovin/player-web-x/framework-types/BaseTypes';
+import type { AnyExecutionContext } from '@bitmovin/player-web-x/framework-types/execution-context/ExecutionContext';
+import type { Task } from '@bitmovin/player-web-x/framework-types/task/Types';
+import { createEffectFactory, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
 
 export type ResizeObserverEffect = typeof ResizeObserverEffectFactory;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Subscriber = Step<any, ResizeObserverEntry[], any>;
+type Subscriber = Task<any, ResizeObserverEntry[], any>;
 
 type UnobserverFunctionMap = Map<HTMLElement, Unsubscribe[]>;
 
@@ -20,8 +19,8 @@ function subscribe<Element extends HTMLElement>(
   if (context === undefined) {
     throw new Error('Encountered undefined ExecutionContext in EventListenerEffect');
   }
-  const listenerPipeline = createPipeline(`element-resize-observer`, subscriber);
-  const listener: ResizeObserverCallback = (entries: ResizeObserverEntry[]) => context.fork(listenerPipeline, entries);
+  const listenerTask = createTask(`element-resize-observer`, subscriber);
+  const listener: ResizeObserverCallback = (entries: ResizeObserverEntry[]) => context.fork(listenerTask, entries);
 
   const resizeObserver = new ResizeObserver(listener);
 

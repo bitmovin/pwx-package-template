@@ -1,11 +1,10 @@
-import type { ContextWithState } from '../../../types/framework/ExecutionContext';
-
 /**
  * A helper state atom that allows us to directly subscribe to the video element
  * of a given `SourceStateAtom`. The `StateEffect` only allows to subscribe to
  * `StateAtom`s and not individual fields of `StateAtom`s (unless those fields are
  * themselves `StateAtom`s).
  */
+import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
 
 interface VideoElementState {
   element: HTMLVideoElement | undefined;
