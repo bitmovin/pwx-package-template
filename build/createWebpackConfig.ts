@@ -48,7 +48,7 @@ export function createWebpackConfig(options: CreateWebpackConfigOptions): Config
       splitChunks: {},
       usedExports: true,
     },
-    plugins: getPlugins(false, serve ? ['./static'] : []),
+    plugins: getPlugins(serve ? ['./static'] : []),
     performance: {
       // Disable "asset size exceeds the recommended limit (244 KiB)" warnings
       hints: false,
@@ -82,7 +82,7 @@ function getLoaders(): RuleSetRule[] {
   ];
 }
 
-function getPlugins(isProduction: boolean, serveDirs = []): WebpackPluginInstance[] {
+function getPlugins(serveDirs = []): WebpackPluginInstance[] {
   const plugins: WebpackPluginInstance[] = [];
 
   plugins.push(
