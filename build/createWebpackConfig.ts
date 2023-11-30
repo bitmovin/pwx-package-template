@@ -87,7 +87,7 @@ function getPlugins(isProduction: boolean, serveDirs = []): WebpackPluginInstanc
 
   plugins.push(
     new WebpackBuildNotifierPlugin({
-      title: 'Player Web X Alpha Program',
+      title: 'Player Web X Package Template',
       suppressCompileStart: false,
       showDuration: true,
     }),
