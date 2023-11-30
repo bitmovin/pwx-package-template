@@ -162,20 +162,14 @@
   const sourceUrlInput = document.querySelector('#source-url-input');
   const availableSourcesList = document.querySelector('#available-sources-list');
 
-  const fmp4WithVttSubtitles = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/fmp4-vtt-offset/master.m3u8';
-  const fmpMultipleAudioTracks = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/multi-audio/github2390/VideoWithMultipleAudioTracks/master.m3u8';
   const tearsOfSteel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/tos/m3u8/index.m3u8';
   const sintel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/sintel/m3u8/index.m3u8';
-  const fakeFmp4Live = 'https://storage.googleapis.com/shaka-live-assets/player-source.m3u8';
   const bbbLlhlsFmp4 = 'https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8';
   const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
 
   const allSourcesMap = {
     'Sintel': sintel,
     'Tears of Steel': tearsOfSteel,
-    'fMP4 with VTT subtitles': fmp4WithVttSubtitles,
-    'fMP4 with multiple audio tracks': fmpMultipleAudioTracks,
-    'Fake live fMP4 stream': fakeFmp4Live,
     'Big Buck Bunny LL-HLS fMP4': bbbLlhlsFmp4,
     'OvenMediaEngine LL-HLS fMP4': ovmLlhlsFmp4,
   };
