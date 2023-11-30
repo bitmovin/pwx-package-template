@@ -41,7 +41,7 @@ function getWebpackConfigs(): WebpackBuildOptions {
         stats: { ...defaultStats, chunks: true },
       },
       serve: false,
-      root: ['bitmovin', 'phoenix', '[name]'],
+      root: ['bitmovin', 'playerx', '[name]'],
     }),
     [WebpackBuilds.SERVE]: createWebpackConfig({
       entryPoints: packages,
@@ -54,7 +54,7 @@ function getWebpackConfigs(): WebpackBuildOptions {
         watchOptions,
       },
       serve: true,
-      root: ['bitmovin', 'phoenix', '[name]'],
+      root: ['bitmovin', 'playerx', '[name]'],
     }),
   };
 }
