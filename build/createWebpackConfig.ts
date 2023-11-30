@@ -29,7 +29,7 @@ export function createWebpackConfig(options: CreateWebpackConfigOptions): Config
         name: {
           amd: '[name]',
           commonjs: '[name]',
-          root: root ?? ['bitmovin', 'phoenix'],
+          root: root ?? ['bitmovin', 'playerx'],
         },
       },
       pathinfo: false,

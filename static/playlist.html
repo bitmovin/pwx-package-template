@@ -99,7 +99,7 @@
     const playlistContainer = document.querySelector('#playlist-container');
     const sourceUrlInput = document.querySelector('#source-url-input');
     const availableSourcesList = document.querySelector('#available-sources-list');
-    const Player = bitmovin.phoenix.Player;
+    const Player = bitmovin.playerx.Player;
     const fmp4WithVttSubtitles = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/fmp4-vtt-offset/master.m3u8';
     const fmpMultipleAudioTracks = 'https://s3-eu-west-1.amazonaws.com/bitmovin-player-eu-west1-ci-input/general/hls/multi-audio/github2390/VideoWithMultipleAudioTracks/master.m3u8';
     const tearsOfSteel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/tos/m3u8/index.m3u8';
@@ -108,17 +108,18 @@
     const streamsLiveStream = 'https://d1n9m42trkf55h.cloudfront.net/9d1725ee-4319-4381-abfd-4d07cadb9499/index.m3u8';
     const bbbLlhlsFmp4 = 'https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8';
     const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
-    const player = Player();
+    const player = Player({
+      key: 'YOUR-PLAYER-KEY',
+    });
 
+    player.packages.add(bitmovin.playerx['data'].default);
+    player.packages.add(bitmovin.playerx['network'].default);
+    player.packages.add(bitmovin.playerx['hls'].default);
+    player.packages.add(bitmovin.playerx['presentation'].default);
+    player.packages.add(bitmovin.playerx['source'].default);
+    player.packages.add(bitmovin.playerx['sources-api'].default);
 
-    player.packages.add(bitmovin.phoenix['data'].default);
-    player.packages.add(bitmovin.phoenix['network'].default);
-    player.packages.add(bitmovin.phoenix['hls'].default);
-    player.packages.add(bitmovin.phoenix['presentation'].default);
-    player.packages.add(bitmovin.phoenix['source'].default);
-    player.packages.add(bitmovin.phoenix['sources-api'].default);
-
-    player.packages.add(bitmovin.phoenix['playlist'].default)
+    player.packages.add(bitmovin.playerx['playlist'].default)
 
     const allSourcesMap = {
         'Sintel': sintel,
