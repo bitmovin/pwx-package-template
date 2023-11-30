@@ -1,178 +1,237 @@
 <html>
-<head>
+  <head>
     <title>Bitmovin Player Web X</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <link rel="shortcut icon" href="#" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css" />
 
     <!--
       Here we load the framework core source file, followed by the packages which compose the player .
     -->
 
     <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/bundles/playerx-core.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-capabilities.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-segment-processing.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-container-mp4.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-data.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-network.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-translation.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-parsing.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-presentation.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-source.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-sources-api.package.js"></script>
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/packages/playerx-adaptation.package.js"></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-capabilities.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-segment-processing.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-container-mp4.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-data.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-network.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-translation.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-parsing.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-presentation.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-source.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-sources-api.package.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="../node_modules/@bitmovin/player-web-x/packages/playerx-adaptation.package.js"
+    ></script>
     <script type="text/javascript" src="../out/playlist.package.js"></script>
 
     <style>
-        .container .row {
-            padding: 1em 0;
-        }
+      .container .row {
+        padding: 1em 0;
+      }
 
-        .form-select {
-            font-size: 1.4em;
-        }
+      .form-select {
+        font-size: 1.4em;
+      }
 
-        .btn-group {
-            margin-top: 0.5em;
-            display: flex !important;
-        }
+      .btn-group {
+        margin-top: 0.5em;
+        display: flex !important;
+      }
 
-        .logo {
-            float: left;
-            margin-right: 1em;
-        }
+      .logo {
+        float: left;
+        margin-right: 1em;
+      }
 
-        .playlist-remove-btn {
-            cursor: pointer;
-        }
+      .playlist-remove-btn {
+        cursor: pointer;
+      }
     </style>
-</head>
-<body>
-<datalist id="available-sources-list"></datalist>
+  </head>
+  <body>
+    <datalist id="available-sources-list"></datalist>
 
-<div class="container">
-    <div class="row">
+    <div class="container">
+      <div class="row">
         <div class="col col-sm">
-            <img class="logo" src="./bitmovin-player-x-gradient.png" width="50">
-            <h1>Bitmovin Player Web X Playlist Demo</h1>
+          <img class="logo" src="./bitmovin-player-x-gradient.png" width="50" />
+          <h1>Bitmovin Player Web X Playlist Demo</h1>
         </div>
-    </div>
+      </div>
 
-    <div class="row">
+      <div class="row">
         <div class="col-sm">
-            <div class="input-group mb-3">
-                <input id="source-url-input" type="text" class="form-control" list="available-sources-list"
-                       placeholder="HLS Source URL" aria-label="Source URL" aria-describedby="basic-addon2">
-                <button class="btn btn-outline-success" id="add-source-button" onclick="addSource()"><i
-                        class="bi bi-plus"></i> Add Source
-                </button>
-            </div>
+          <div class="input-group mb-3">
+            <input
+              id="source-url-input"
+              type="text"
+              class="form-control"
+              list="available-sources-list"
+              placeholder="HLS Source URL"
+              aria-label="Source URL"
+              aria-describedby="basic-addon2"
+            />
+            <button class="btn btn-outline-success" id="add-source-button" onclick="addSource()">
+              <i class="bi bi-plus"></i> Add Source
+            </button>
+          </div>
         </div>
-    </div>
-    <div class="row">
+      </div>
+      <div class="row">
         <div class="col-12 col-md-8 col-xl-9">
-            <div class="row">
-                <div class="col">
-                    <div id="player-container"></div>
-                </div>
+          <div class="row">
+            <div class="col">
+              <div id="player-container"></div>
             </div>
-            <div class="row">
-                <div class="col">
-                    <div class="btn-group" role="group" aria-label="Player controls">
-                        <button class="btn btn-outline-secondary" onclick="player.playlist.previous()"><i
-                                class="bi bi-skip-backward-fill"></i></button>
-                        <button class="btn btn-outline-secondary" onclick="playPause()"><i class="bi bi-play-fill"></i>
-                            <i class="bi bi-pause-fill"></i></button>
-                        <button class="btn btn-outline-secondary" onclick="muteUnmute()"><i
-                                class="bi bi-volume-mute-fill"></i></button>
-                        <button class="btn btn-outline-secondary" onclick="player.playlist.next()"><i
-                                class="bi bi-skip-forward-fill"></i></button>
-                    </div>
-                </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="btn-group" role="group" aria-label="Player controls">
+                <button class="btn btn-outline-secondary" onclick="player.playlist.previous()">
+                  <i class="bi bi-skip-backward-fill"></i>
+                </button>
+                <button class="btn btn-outline-secondary" onclick="playPause()">
+                  <i class="bi bi-play-fill"></i> <i class="bi bi-pause-fill"></i>
+                </button>
+                <button class="btn btn-outline-secondary" onclick="muteUnmute()">
+                  <i class="bi bi-volume-mute-fill"></i>
+                </button>
+                <button class="btn btn-outline-secondary" onclick="player.playlist.next()">
+                  <i class="bi bi-skip-forward-fill"></i>
+                </button>
+              </div>
             </div>
+          </div>
         </div>
         <div class="col-md-4 col-12 col-xl-3">
-            <div class="row">
-                    <ul class="list-group" id="playlist-container"></ul>
-                </div>
+          <div class="row">
+            <ul class="list-group" id="playlist-container"></ul>
+          </div>
         </div>
+      </div>
     </div>
 
-</div>
+    <script type="text/javascript">
+      const playlistContainer = document.querySelector('#playlist-container');
+      const sourceUrlInput = document.querySelector('#source-url-input');
+      const availableSourcesList = document.querySelector('#available-sources-list');
+      const Player = bitmovin.playerx.Player;
+      const tearsOfSteel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/tos/m3u8/index.m3u8';
+      const sintel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/sintel/m3u8/index.m3u8';
+      const bbbLlhlsFmp4 = 'https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8';
+      const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
+      const player = Player({
+        key: 'YOUR-PLAYER-KEY',
+      });
 
-<script type="text/javascript">
-    const playlistContainer = document.querySelector('#playlist-container');
-    const sourceUrlInput = document.querySelector('#source-url-input');
-    const availableSourcesList = document.querySelector('#available-sources-list');
-    const Player = bitmovin.playerx.Player;
-    const tearsOfSteel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/tos/m3u8/index.m3u8';
-    const sintel = 'https://cdn.bitmovin.com/content/assets/streams-sample-video/sintel/m3u8/index.m3u8';
-    const bbbLlhlsFmp4 = 'https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8';
-    const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
-    const player = Player({
-      key: 'YOUR-PLAYER-KEY',
-    });
+      player.packages.add(bitmovin.playerx['capabilities'].default);
+      player.packages.add(bitmovin.playerx['segment-processing'].default);
+      player.packages.add(bitmovin.playerx['container-mp4'].default);
+      player.packages.add(bitmovin.playerx['data'].default);
+      player.packages.add(bitmovin.playerx['network'].default);
+      player.packages.add(bitmovin.playerx['hls-translation'].default);
+      player.packages.add(bitmovin.playerx['hls-parsing'].default);
+      player.packages.add(bitmovin.playerx['hls'].default);
+      player.packages.add(bitmovin.playerx['presentation'].default);
+      player.packages.add(bitmovin.playerx['source'].default);
+      player.packages.add(bitmovin.playerx['sources-api'].default);
+      player.packages.add(bitmovin.playerx['adaptation'].default);
 
-    player.packages.add(bitmovin.playerx['capabilities'].default);
-    player.packages.add(bitmovin.playerx['segment-processing'].default);
-    player.packages.add(bitmovin.playerx['container-mp4'].default);
-    player.packages.add(bitmovin.playerx['data'].default);
-    player.packages.add(bitmovin.playerx['network'].default);
-    player.packages.add(bitmovin.playerx['hls-translation'].default);
-    player.packages.add(bitmovin.playerx['hls-parsing'].default);
-    player.packages.add(bitmovin.playerx['hls'].default);
-    player.packages.add(bitmovin.playerx['presentation'].default);
-    player.packages.add(bitmovin.playerx['source'].default);
-    player.packages.add(bitmovin.playerx['sources-api'].default);
-    player.packages.add(bitmovin.playerx['adaptation'].default);
+      player.packages.add(bitmovin.playerx['playlist'].default);
 
-    player.packages.add(bitmovin.playerx['playlist'].default)
-
-    const allSourcesMap = {
-        'Sintel': sintel,
+      const allSourcesMap = {
+        Sintel: sintel,
         'Tears of Steel': tearsOfSteel,
         'Big Buck Bunny LL-HLS fMP4': bbbLlhlsFmp4,
         'OvenMediaEngine LL-HLS fMP4': ovmLlhlsFmp4,
-    };
+      };
 
-    function getSourceName(url) {
+      function getSourceName(url) {
         return Object.keys(allSourcesMap).find(key => allSourcesMap[key] === url) || url;
-    }
+      }
 
-    function getActiveSources() {
+      function getActiveSources() {
         return player.sources.list();
-    }
+      }
 
-    function getSourceUrl() {
+      function getSourceUrl() {
         return sourceUrlInput.value;
-    }
+      }
 
-    function updateActiveSources(data) {
-        playlistContainer.innerHTML = data.map(source => `
+      function updateActiveSources(data) {
+        playlistContainer.innerHTML = data
+          .map(
+            source => `
              <li
-              class="list-group-item d-flex justify-content-between align-items-center ${source.isActive ? 'active' : ''}"
+              class="list-group-item d-flex justify-content-between align-items-center ${
+                source.isActive ? 'active' : ''
+              }"
               style="cursor: pointer"
               onClick="player.playlist.activate('${source.url}')"
               >
                 ${Object.keys(allSourcesMap).find(k => allSourcesMap[k] === source.url)}
-              <span class="badge badge-primary badge-pill playlist-remove-btn" onClick="removeSourceButtonCb('${source.url}')" style="color: ${source.isActive ? 'white' : 'black'}">x</span>
+              <span class="badge badge-primary badge-pill playlist-remove-btn" onClick="removeSourceButtonCb('${
+                source.url
+              }')" style="color: ${source.isActive ? 'white' : 'black'}">x</span>
             </li>
-        `).join('');
-    }
+        `,
+          )
+          .join('');
+      }
 
-    function removeSourceButtonCb(source) {
+      function removeSourceButtonCb(source) {
         console.warn(source);
         const sources = player.sources.list();
 
         const matching = sources.find(src => src.url === source);
         if (matching) {
-            player.sources.remove(matching);
+          player.sources.remove(matching);
         }
-    }
+      }
 
-    function addSource() {
+      function addSource() {
         const sourceUrl = getSourceUrl();
         if (!sourceUrl) return;
 
@@ -180,52 +239,50 @@
 
         playbackApi.setLogLevel(1e9);
         sourceUrlInput.value = '';
-    }
+      }
 
-    function updateAvailableSources() {
+      function updateAvailableSources() {
         Object.values(allSourcesMap).forEach(sourceUrl => {
-            const option = document.createElement('option');
+          const option = document.createElement('option');
 
-            option.innerText = getSourceName(sourceUrl);
-            option.value = sourceUrl;
-            availableSourcesList.appendChild(option);
+          option.innerText = getSourceName(sourceUrl);
+          option.value = sourceUrl;
+          availableSourcesList.appendChild(option);
         });
-    }
+      }
 
-    function playPause() {
+      function playPause() {
         const active = getActiveSources();
         if (!active.length) {
-            return;
+          return;
         }
 
         const video = document.querySelector('video');
         if (video.paused) {
-            video.play();
+          video.play();
         } else {
-            video.pause();
+          video.pause();
         }
-    }
+      }
 
-    function muteUnmute() {
+      function muteUnmute() {
         const active = getActiveSources();
         if (!active.length) {
-            return;
+          return;
         }
 
         const video = document.querySelector('video');
         video.muted = !video.muted;
-    }
+      }
 
-    function subscribeToSources() {
+      function subscribeToSources() {
         player.playlist.onSourcesChange(updateActiveSources);
-    }
+      }
 
-
-    (function main() {
+      (function main() {
         updateAvailableSources();
         subscribeToSources();
-    })();
-
-</script>
-</body>
+      })();
+    </script>
+  </body>
 </html>
