@@ -1,6 +1,6 @@
+import { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { MyApi } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
 import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/framework/core/core/state/StoreEffectFactory';
 import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
@@ -43,7 +43,7 @@ export type PlaybackStateContext = ContextHaving<
  * Exports `PlaybackStateAtom` which is updated inside the package to the correct state based on VideoElement events.
  * Will get executed when [source-state, core-effects, logger] are available
  */
-export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePackageExports, MyApi>(
+export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePackageExports, EmptyObject>(
   'playback-state-package',
   (apiManager, baseContext) => {
     const { StateEffectFactory, StoreEffectFactory, EventListenerEffectFactory } =
@@ -118,16 +118,16 @@ const VideoElementSubscriber = createTask(
     // Using EventListenerEffect, subscribe and dispatch correct state changes.
     // This ensures structured concurrency is honored, as the listeners will be automatically removed once the thread
     // has finished running.
-    events.subscribe(video, 'timeupdate', () => state.dispatch(playbackState.onTimeupdate, video.currentTime));
-    events.subscribe(video, 'durationchange', () => state.dispatch(playbackState.onDurationChange, video.duration));
-    events.subscribe(video, 'ratechange', () => state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate));
-    events.subscribe(video, 'seeking', () => state.dispatch(playbackState.onSeek));
-    events.subscribe(video, 'seeked', () => state.dispatch(playbackState.onSeeked, isPlaying()));
-    events.subscribe(video, 'stalled', () => state.dispatch(playbackState.onStalled));
-    events.subscribe(video, 'waiting', () => state.dispatch(playbackState.onWaiting));
-    events.subscribe(video, 'playing', () => state.dispatch(playbackState.onPlaying));
-    events.subscribe(video, 'pause', () => state.dispatch(playbackState.onPaused));
-    events.subscribe(video, 'ended', () => state.dispatch(playbackState.onEnded));
+    events.subscribe(context, video, 'timeupdate', () => state.dispatch(playbackState.onTimeupdate, video.currentTime));
+    events.subscribe(context, video, 'durationchange', () => state.dispatch(playbackState.onDurationChange, video.duration));
+    events.subscribe(context, video, 'ratechange', () => state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate));
+    events.subscribe(context, video, 'seeking', () => state.dispatch(playbackState.onSeek));
+    events.subscribe(context, video, 'seeked', () => state.dispatch(playbackState.onSeeked, isPlaying()));
+    events.subscribe(context, video, 'stalled', () => state.dispatch(playbackState.onStalled));
+    events.subscribe(context, video, 'waiting', () => state.dispatch(playbackState.onWaiting));
+    events.subscribe(context, video, 'playing', () => state.dispatch(playbackState.onPlaying));
+    events.subscribe(context, video, 'pause', () => state.dispatch(playbackState.onPaused));
+    events.subscribe(context, video, 'ended', () => state.dispatch(playbackState.onEnded));
 
     // Returning loop ensures this task never finishes running until it is terminated by the parent.
     // If it had finished running, it would have removed subscribers above, as they are children of this thread
