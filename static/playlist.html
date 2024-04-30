@@ -206,40 +206,40 @@
             source => `
              <li
               class="list-group-item d-flex justify-content-between align-items-center ${
-                source.isActive ? 'active' : ''
+                source.active ? 'active' : ''
               }"
               style="cursor: pointer"
-              onClick="player.playlist.activate('${source.url}')"
+              onClick="player.playlist.activate('${source.id}')"
               >
                 ${Object.keys(allSourcesMap).find(k => allSourcesMap[k] === source.url)}
               <span class="badge badge-primary badge-pill playlist-remove-btn" onClick="removeSourceButtonCb('${
-                source.url
-              }')" style="color: ${source.isActive ? 'white' : 'black'}">x</span>
+                source.id
+              }')" style="color: ${source.active ? 'white' : 'black'}">x</span>
             </li>
         `,
           )
           .join('');
       }
 
-      function removeSourceButtonCb(source) {
-        console.warn(source);
+      function removeSourceButtonCb(id) {
         const sources = player.sources.list();
 
-        const matching = sources.find(src => src.url === source);
+        const matching = sources.find(src => src.id === id);
         if (matching) {
-          player.sources.remove(matching);
+            player.sources.remove(matching);
         }
-      }
+    }
 
-      function addSource() {
+    function addSource() {
         const sourceUrl = getSourceUrl();
         if (!sourceUrl) return;
 
-        const playbackApi = player.sources.add(sourceUrl);
+        const playbackApi = player.sources.add({resources: [{url: sourceUrl}]}, {attach: true, playback: {autoplay: true, muted: true}});
 
-        playbackApi.setLogLevel(1e9);
+        playbackApi.logLevel = 1e9;
         sourceUrlInput.value = '';
-      }
+    }
+
 
       function updateAvailableSources() {
         Object.values(allSourcesMap).forEach(sourceUrl => {
