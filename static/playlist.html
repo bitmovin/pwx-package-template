@@ -164,6 +164,7 @@
       const ovmLlhlsFmp4 = 'https://llhls-demo.ovenmediaengine.com/app/stream/llhls.m3u8';
       const player = Player({
         key: 'YOUR-PLAYER-KEY',
+        defaultContainer: document.getElementById('player-container')
       });
 
       player.packages.add(bitmovin.playerx['capabilities'].default);

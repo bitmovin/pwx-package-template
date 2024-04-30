@@ -170,7 +170,10 @@
     }
 
     // Make sure to add your player key here, playback will fail otherwise
-    const player = bitmovin.playerx.Player({ key: 'YOUR-PLAYER-KEY', onError });
+    const player = bitmovin.playerx.Player({ 
+        key: 'YOUR-PLAYER-KEY',         
+        defaultContainer: document.getElementById('player-container')
+    });
     const source = 'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8';
 
     // Add the overlay package to the player.
@@ -180,7 +183,7 @@
     player.packages.add(OverlayPackage);
 
     // Finally, load the source we want to play back
-    player.sources.add(source);
+    player.sources.add({resources: [{url: source}]}, {attach: true, playback: {autoplay: true, muted: true}});
 </script>
 </body>
 </html>
