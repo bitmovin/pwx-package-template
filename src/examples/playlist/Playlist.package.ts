@@ -1,15 +1,13 @@
-import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { EmptyObject } from '@bitmovin/player-web-x/types/BaseTypes';
-import type { CoreEffects, CoreStateAtoms } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
-import type { ArrayAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/ArrayStateAtom';
-import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
-import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
-import type {
-  PlayerAndSourcesApi,
-  SourceApiExportNames,
-} from '@bitmovin/player-web-x/types/framework/core/sources-api/Types';
-import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
-import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+import { EmptyObject } from "@bitmovin/player-web-x/framework-types/BaseTypes";
+import { createTask, createPackage, createTaskClosure } from "@bitmovin/player-web-x/playerx-framework-utils";
+import { CoreEffects, CoreStateAtoms } from "@bitmovin/player-web-x/types/framework/core/core/Core.package";
+import { StateAtom } from "@bitmovin/player-web-x/types/framework/core/core/state/Types";
+import { Logger } from "@bitmovin/player-web-x/types/framework/core/core/utils/Logger";
+import { VideoElementAtom } from "@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom";
+import { SourcePackageExportNames, SourceReferences, SourceReference } from "@bitmovin/player-web-x/types/framework/core/source/Types";
+import { SourcesApi, SourceApiBase } from "@bitmovin/player-web-x/types/framework/core/sources-api/Types";
+import { ContextWithState } from "@bitmovin/player-web-x/types/framework/core/Types";
+import { ComponentName } from "@bitmovin/player-web-x/types/framework/Types";
 
 export const PlaylistPackageThreadName = 'playlist-package-thread';
 
@@ -17,110 +15,141 @@ export type PlaylistPackageDependencies = {
   [ComponentName.Logger]: Logger;
   [ComponentName.CoreEffects]: CoreEffects;
   [ComponentName.CoreStateAtoms]: CoreStateAtoms;
-  [SourceApiExportNames.SourceList]: ArrayAtom<SourceStateAtom>;
+  [SourcePackageExportNames.SourceReferences]: SourceReferences;
 };
 
-const sourceVideoChange = (_: ArrayAtom<SourceStateAtom>, api: PlaylistAPI) =>
-  createTask('playlist-source-change-on-end', function (data: SourceStateAtom, ctx: ContextWithState) {
-    const onEnded = () => {
-      if (data.video.element) {
-        if (data.video.element.currentTime > 0 && data.video.element.duration > 0) {
-          api.playlist.next();
-        }
-      }
-    };
-
-    if (data.video.element && data.isActive) {
-      data.video.element.addEventListener('ended', onEnded);
-    }
-
-    const onAbort = () => {
-      data.video.element?.removeEventListener('ended', onEnded);
-      ctx.abortSignal.removeEventListener('abort', onAbort);
-    };
-
-    ctx.abortSignal.addEventListener('abort', onAbort);
-
-    return ctx.effects.loop(ctx.abortSignal);
-  });
-
-const sourcesChangeTask = (api: PlaylistAPI) =>
-  createTask(PlaylistPackageThreadName, function (sources: ArrayAtom<SourceStateAtom>, ctx: ContextWithState) {
-    sources.forEach(source => {
-      ctx.effects.state.subscribe(ctx, source, sourceVideoChange(sources, api), () => true);
-    });
-
-    return ctx.effects.loop(ctx.abortSignal);
-  });
-
-type PlaylistAPI = PlayerAndSourcesApi & {
+export type PlaylistAPI = SourcesApi<SourceApiBase> & {
   playlist: {
     next: () => void;
     previous: () => void;
-    onSourcesChange: (callback: (data: ArrayAtom<SourceStateAtom>) => void) => () => void;
+    onSourcesChange: (
+      callback: (
+        data: {
+          url: string;
+          id: string;
+          active: boolean;
+        }[],
+      ) => void,
+    ) => () => void;
     activate: (url: string) => void;
   };
 };
 
+
+const sourceVideoChange = (sourceReferences: SourceReferences) =>
+  createTask('playlist-source-change-on-end', function (video: VideoElementAtom, ctx: ContextWithState) {
+    const onEnded = () => {
+      if (video.element) {
+        if (video.element.currentTime > 0 && video.element.duration > 0) {
+          selectSourceByIndex(ctx, 1, sourceReferences);
+        }
+      }
+    };
+
+    if (video.element) {
+      ctx.effects.events.subscribe(ctx, video.element, 'ended', onEnded);
+    }
+
+    return ctx.effects.loop(ctx.abortSignal);
+  });
+
+const sourcesChangeTask = createTask(
+  PlaylistPackageThreadName,
+  function (sources: SourceReferences, ctx: ContextWithState) {
+    sources.forEach(source => {
+      ctx.effects.state.subscribe(ctx, source.state.video, sourceVideoChange(sources));
+    });
+
+    return ctx.effects.loop(ctx.abortSignal);
+  },
+);
+
 export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyObject, PlaylistAPI>(
   'playlist-package',
   (apiManager, ctx) => {
-    const logger = ctx.registry.get('logger');
-    const sourcesState = ctx.registry.get('source-list');
-    const { StateEffectFactory, EventListenerEffectFactory } = ctx.registry.get('core-effects');
+    const logger = ctx.registry.get(ComponentName.Logger);
+    const sourceReferences = ctx.registry.get(SourcePackageExportNames.SourceReferences);
+    const { StateEffectFactory, EventListenerEffectFactory } = ctx.registry.get(ComponentName.CoreEffects);
     const sourcesContext = ctx.using(StateEffectFactory).using(EventListenerEffectFactory);
 
     logger.log('Using Playlist package');
 
-    apiManager.set('playlist', createPlaylistAPI(sourcesContext, sourcesState, apiManager.api));
+    apiManager.set('playlist', createPlaylistAPI(sourcesContext, sourceReferences, apiManager.api));
 
-    sourcesContext.effects.state.subscribe(sourcesContext, sourcesState, sourcesChangeTask(apiManager.api), () => true);
+    sourcesContext.effects.state.subscribe(sourcesContext, sourceReferences, sourcesChangeTask);
   },
-  ['logger', 'core-state-atoms', 'source-list', 'core-effects'],
+  [
+    ComponentName.Logger,
+    ComponentName.CoreStateAtoms,
+    SourcePackageExportNames.SourceReferences,
+    ComponentName.CoreEffects,
+  ],
 );
 
-function createPlaylistAPI(ctx: ContextWithState, sources: ArrayAtom<SourceStateAtom>, api: PlaylistAPI) {
+function createPlaylistAPI(ctx: ContextWithState, sourceReferences: SourceReferences, api: PlaylistAPI) {
   return {
-    next: () => selectSourceByIndex(1, sources, api),
-    previous: () => selectSourceByIndex(-1, sources, api),
-    activate: (url: string) => {
-      const source = sources.find(v => v.url === url);
-      if (source) {
-        api.sources.setActive(source);
+    next: () => selectSourceByIndex(ctx, 1, sourceReferences),
+    previous: () => selectSourceByIndex(ctx, -1, sourceReferences),
+    activate: (id: string) => {
+      const nextSource = api.sources.list().find(source => source.id === id);
+
+      if (nextSource) {
+        api.sources.attachVideo(nextSource);
       }
     },
-    onSourcesChange(callback: (sources: ArrayAtom<SourceStateAtom>) => void) {
+    onSourcesChange(callback: (sources: ReturnType<typeof mapSourcesForCallback>) => void) {
       return ctx.effects.state.subscribe(
         ctx,
-        sources,
-        createTask('onSourcesChangeAPI', function (data: ArrayAtom<SourceStateAtom>, _: typeof ctx) {
-          sources.forEach(source => {
-            ctx.effects.state.subscribe(
-              ctx,
-              source,
-              createTask('onSourceChangeAPI', function (_: SourceStateAtom, __: typeof ctx) {
-                callback(sources);
-              }),
-            );
-          });
-          callback(data);
+        sourceReferences,
+        onSourcesChangeTask(sourceReferences, () => {
+          sourceReferences.forEach(ref =>
+            ctx.effects.state.subscribe(ctx, ref.state.video, onSourcesChangeTask(sourceReferences, callback)),
+          );
+          callback(mapSourcesForCallback(sourceReferences));
         }),
       );
     },
   };
 }
 
-function selectSourceByIndex(index: number, sources: ArrayAtom<SourceStateAtom>, api: PlaylistAPI) {
-  const currentSource = sources.find(source => source.isActive);
+const onSourcesChangeTask = createTaskClosure(
+  (sourceReferences: SourceReferences, callback: (sources: ReturnType<typeof mapSourcesForCallback>) => void) => [
+    'on-sources-changed-subscriber',
+    (_: StateAtom, __: ContextWithState) => {
+      callback(mapSourcesForCallback(sourceReferences));
+    },
+  ],
+);
+
+function mapSourcesForCallback(references: SourceReferences) {
+  return references.map(reference => {
+    return {
+      url: reference.state.url,
+      id: reference.id,
+      active: Boolean(reference.state.video.element),
+    };
+  });
+}
+
+function selectSourceByIndex(ctx: ContextWithState, index: number, sourceReferences: SourceReferences) {
+  const currentSource = sourceReferences.find(source => source.state.video.element);
   if (!currentSource) {
     return;
   }
-  const nextSourceIndex = sources.indexOf(currentSource) + index;
-  const nextSource = sources[nextSourceIndex];
+  const nextSourceIndex = sourceReferences.indexOf(currentSource) + index;
+  const nextSource = sourceReferences[nextSourceIndex];
 
-  if (nextSource) {
-    api.sources.setActive(nextSource);
+  activateSource(ctx, currentSource as SourceReference, nextSource as SourceReference);
+}
+
+function activateSource(ctx: ContextWithState, currentSource: SourceReference, nextSource: SourceReference) {
+  const videoElement = currentSource.state.video.element;
+  if (!videoElement) {
+    return;
   }
+
+  ctx.effects.state.dispatch(currentSource.state.video.clear);
+  ctx.effects.state.dispatch(nextSource.state.video.set, videoElement);
 }
 
 export default PlaylistPackage;
