@@ -4,10 +4,10 @@ import { CoreEffects, CoreStateAtoms } from "@bitmovin/player-web-x/types/framew
 import { StateAtom } from "@bitmovin/player-web-x/types/framework/core/core/state/Types";
 import { Logger } from "@bitmovin/player-web-x/types/framework/core/core/utils/Logger";
 import { VideoElementAtom } from "@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom";
-import { SourcePackageExportNames, SourceReferences, SourceReference } from "@bitmovin/player-web-x/types/framework/core/source/Types";
+import type { SourceReferences, SourceReference, SourcePackageExportNames } from "@bitmovin/player-web-x/types/framework/core/source/Types";
 import { SourcesApi, SourceApiBase } from "@bitmovin/player-web-x/types/framework/core/sources-api/Types";
 import { ContextWithState } from "@bitmovin/player-web-x/types/framework/core/Types";
-import { ComponentName } from "@bitmovin/player-web-x/types/framework/Types";
+import type { ComponentName } from "@bitmovin/player-web-x/types/framework/Types";
 
 export const PlaylistPackageThreadName = 'playlist-package-thread';
 
@@ -67,9 +67,9 @@ const sourcesChangeTask = createTask(
 export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyObject, PlaylistAPI>(
   'playlist-package',
   (apiManager, ctx) => {
-    const logger = ctx.registry.get(ComponentName.Logger);
-    const sourceReferences = ctx.registry.get(SourcePackageExportNames.SourceReferences);
-    const { StateEffectFactory, EventListenerEffectFactory } = ctx.registry.get(ComponentName.CoreEffects);
+    const logger = ctx.registry.get('logger');
+    const sourceReferences = ctx.registry.get('source-references');
+    const { StateEffectFactory, EventListenerEffectFactory } = ctx.registry.get('core-effects');
     const sourcesContext = ctx.using(StateEffectFactory).using(EventListenerEffectFactory);
 
     logger.log('Using Playlist package');
@@ -79,10 +79,10 @@ export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyO
     sourcesContext.effects.state.subscribe(sourcesContext, sourceReferences, sourcesChangeTask);
   },
   [
-    ComponentName.Logger,
-    ComponentName.CoreStateAtoms,
-    SourcePackageExportNames.SourceReferences,
-    ComponentName.CoreEffects,
+    'logger',
+    'core-effects',
+    'core-state-atoms',
+    'source-references',
   ],
 );
 
