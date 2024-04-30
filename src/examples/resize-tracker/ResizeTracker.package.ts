@@ -1,6 +1,6 @@
+import { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { MyApi } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
 import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/framework/core/core/state/StoreEffectFactory';
 import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
@@ -42,7 +42,7 @@ export type VideoStateContext = ContextHaving<
   >
 >;
 
-export const ResizeTrackerPackage = createPackage<Dependencies, ResizeTrackerExports, MyApi>(
+export const ResizeTrackerPackage = createPackage<Dependencies, ResizeTrackerExports, EmptyObject>(
   'resize-tracker-package',
   (apiManager, baseContext) => {
     const { StateEffectFactory, StoreEffectFactory, EventListenerEffectFactory } =
