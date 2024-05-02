@@ -1,10 +1,13 @@
+import { Abortable } from '@bitmovin/player-web-x/framework-types/abortable/Abortable';
 import { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
 import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
 import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/framework/core/core/state/StoreEffectFactory';
+import type { StateAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/Types';
 import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
 import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
+import { VideoElementAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom';
 import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
 import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
 
@@ -12,8 +15,6 @@ import type { PlaybackStateAtom } from './PlaybackStateAtom';
 import { createPlaybackStateAtom, Playback } from './PlaybackStateAtom';
 import type { PlaybackStatePackageExports } from './Types';
 import { PlaybackStateExportNames } from './Types';
-import type { VideoElementStateAtom } from './VideoElementStateAtom';
-import { createVideoElementStateAtom } from './VideoElementStateAtom';
 
 type Dependencies = {
   [ComponentName.Logger]: Logger;
@@ -31,7 +32,6 @@ export type PlaybackStateContext = ContextHaving<
   ContextUsing<
     [
       StoreEffectFactory<'playbackState', PlaybackStateAtom>,
-      StoreEffectFactory<'videoElementState', VideoElementStateAtom>,
     ],
     ContextWithState
   >
@@ -45,31 +45,25 @@ export type PlaybackStateContext = ContextHaving<
  */
 export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePackageExports, EmptyObject>(
   'playback-state-package',
-  (apiManager, baseContext) => {
+  (_apiManager, baseContext) => {
     const { StateEffectFactory, StoreEffectFactory, EventListenerEffectFactory } =
       baseContext.registry.get('core-effects');
     const contextWithState = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
     const playbackStateAtom = createPlaybackStateAtom(contextWithState);
-    // Create videoElementStateAtom to be able to subscribe on videoElement being set or unset
-    const videoElementState = createVideoElementStateAtom(contextWithState);
 
     // Create new context to store playbackState and videoElementState to make it available to children
     // Use EventListenerEffectFactory in the context
     const contextWithPlaybackState = contextWithState
       .using(StoreEffectFactory('playbackState', playbackStateAtom))
-      .using(StoreEffectFactory('videoElementState', videoElementState))
       .using(EventListenerEffectFactory);
 
     const sourceState = baseContext.registry.get('source-state');
     const { state } = contextWithPlaybackState.effects;
 
+    const initialVideoElementSubscriberFork = contextWithPlaybackState.fork(VideoElementSubscriber(), sourceState.video, () => true);
+    initialVideoElementSubscriberFork.catch(() => {/* */})
     // Subscribe to video element being set or unset, and trigger `VideoElementSubscriber`
-    state.subscribe(contextWithPlaybackState, videoElementState, VideoElementSubscriber);
-    // Subscribe to `SourceState` changes, which will update `VideoElementStateAtom` to the correct state
-    state.subscribe(contextWithPlaybackState, sourceState, SourceStateChangeSubscriber);
-
-    // Execute `SourceStateChangeSubscriber` right away so that the `PlaybackStateAtom` is properly initialized
-    contextWithPlaybackState.fork(SourceStateChangeSubscriber, sourceState);
+    state.subscribe(contextWithPlaybackState, sourceState.video, VideoElementSubscriber(initialVideoElementSubscriberFork));
 
     // Export `PlaybackStateAtom` from the package
     contextWithPlaybackState.registry.set(PlaybackStateExportNames.PlaybackStateAtom, playbackStateAtom);
@@ -101,17 +95,24 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
   // one more step that returns loop
 );
 
-const VideoElementSubscriber = createTask(
+const VideoElementSubscriber = (initialAbortable?: Abortable) => createTask(
   'video-element-subscriber',
-  (videoElementState: VideoElementStateAtom, context: PlaybackStateContext) => {
+  (videoElementState: VideoElementAtom, context: PlaybackStateContext) => {
+    if (initialAbortable) {
+      initialAbortable.abort(new Error('Aborted'))
+    }
+    const { events, state, store } = context.effects;
+    const { playbackState } = store;
     const video = videoElementState.element;
 
-    if (video === undefined) {
+    if (video !== undefined) {
+      state.dispatch(playbackState.onResume);
+      state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate);
+    } else {
+      state.dispatch(playbackState.onSuspended);
       return;
     }
 
-    const { events, state, store } = context.effects;
-    const { playbackState } = store;
     const isPlaying = () => !video.paused && !video.ended;
 
     state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate);
@@ -136,24 +137,5 @@ const VideoElementSubscriber = createTask(
   },
 );
 
-const SourceStateChangeSubscriber = createTask(
-  'source-state-change-subscriber',
-  (source: SourceStateAtom, context: PlaybackStateContext) => {
-    const { state, store } = context.effects;
-    const { videoElementState, playbackState } = store;
-    const video = source.video.element;
-
-    state.dispatch(videoElementState.set, video);
-
-    if (video !== undefined) {
-      state.dispatch(playbackState.onResume);
-      state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate);
-    } else {
-      state.dispatch(playbackState.onSuspended);
-    }
-
-    return context.effects.loop(context.abortSignal);
-  },
-);
 
 export default PlaybackStatePackage;
