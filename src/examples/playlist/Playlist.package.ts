@@ -22,19 +22,13 @@ export type PlaylistPackageDependencies = {
   [SourcePackageExportNames.SourceReferences]: SourceReferences;
 };
 
+type SourceChangeCallback = (data: { url: string, id: string, active: boolean }[]) => void;
+
 export type PlaylistAPI = SourcesApi<SourceApiBase> & {
   playlist: {
     next: () => void;
     previous: () => void;
-    onSourcesChange: (
-      callback: (
-        data: {
-          url: string;
-          id: string;
-          active: boolean;
-        }[],
-      ) => void,
-    ) => () => void;
+    onSourcesChange: (callback: SourceChangeCallback) => () => void;
     activate: (url: string) => void;
   };
 };
