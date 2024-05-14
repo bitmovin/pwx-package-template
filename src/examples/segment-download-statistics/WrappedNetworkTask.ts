@@ -1,11 +1,11 @@
 import { createTaskClosure } from '@bitmovin/player-web-x/playerx-framework-utils';
 import type { NetworkAtom } from '@bitmovin/player-web-x/types/framework/core/core/network/NetworkAtom';
+import type { NetworkPackageContext } from '@bitmovin/player-web-x/types/framework/core/network/Network.package';
+import type { NetworkTask } from '@bitmovin/player-web-x/types/framework/core/network/NetworkTask';
 import type { BaseRequestConfig, HttpResponseType } from '@bitmovin/player-web-x/types/framework/core/network/Types';
 
 import { CustomComponentName } from './CustomComponents';
 import type { NetworkInspectorContext } from './NetworkInspector.package';
-import { NetworkPackageContext } from '@bitmovin/player-web-x/types/framework/core/network/Network.package';
-import { NetworkTask } from '@bitmovin/player-web-x/types/framework/core/network/NetworkTask';
 
 export const wrapNetworkTask = (context: NetworkInspectorContext): void => {
   const downloadInfoAtom = context.registry.get(CustomComponentName.DownloadInfoAtom);

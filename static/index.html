@@ -197,7 +197,7 @@
         playback: {
           autoplay: true,
           muted: true,
-        }
+        },
       });
 
       /**
@@ -282,7 +282,7 @@
         });
 
         activeSourcesList.selectedIndex = Array.from(activeSourcesList.children).indexOf(activeOption);
-          // currentIndex < activeSourcesList.children.length ? currentIndex : activeSourcesList.children.length - 1;
+        // currentIndex < activeSourcesList.children.length ? currentIndex : activeSourcesList.children.length - 1;
       }
 
       function getSelectedSource() {
@@ -299,7 +299,7 @@
         const sourceApi = player.sources.add(
           { resources: [{ url: sourceUrl }] },
           { attach: true, playback: { autoplay: true, muted: true } },
-        ); 
+        );
 
         sourceApi.logLevel = 1e9;
         activeSourcesList.selectedIndex = activeSourcesList.children.length - 1;
@@ -382,9 +382,8 @@
         video.muted = !video.muted;
       }
 
-
       function subscribeToSources() {
-          player.playlist.onSourcesChange(updateActiveSources);
+        player.playlist.onSourcesChange(updateActiveSources);
       }
 
       (function main() {

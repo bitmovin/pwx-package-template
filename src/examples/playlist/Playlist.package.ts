@@ -1,13 +1,17 @@
-import { EmptyObject } from "@bitmovin/player-web-x/framework-types/BaseTypes";
-import { createTask, createPackage, createTaskClosure } from "@bitmovin/player-web-x/playerx-framework-utils";
-import { CoreEffects, CoreStateAtoms } from "@bitmovin/player-web-x/types/framework/core/core/Core.package";
-import { StateAtom } from "@bitmovin/player-web-x/types/framework/core/core/state/Types";
-import { Logger } from "@bitmovin/player-web-x/types/framework/core/core/utils/Logger";
-import { VideoElementAtom } from "@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom";
-import type { SourceReferences, SourceReference, SourcePackageExportNames } from "@bitmovin/player-web-x/types/framework/core/source/Types";
-import { SourcesApi, SourceApiBase } from "@bitmovin/player-web-x/types/framework/core/sources-api/Types";
-import { ContextWithState } from "@bitmovin/player-web-x/types/framework/core/Types";
-import type { ComponentName } from "@bitmovin/player-web-x/types/framework/Types";
+import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
+import { createPackage, createTask, createTaskClosure } from '@bitmovin/player-web-x/playerx-framework-utils';
+import type { CoreEffects, CoreStateAtoms } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
+import type { StateAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/Types';
+import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
+import type { VideoElementAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom';
+import type {
+  SourcePackageExportNames,
+  SourceReference,
+  SourceReferences,
+} from '@bitmovin/player-web-x/types/framework/core/source/Types';
+import type { SourceApiBase, SourcesApi } from '@bitmovin/player-web-x/types/framework/core/sources-api/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
 
 export const PlaylistPackageThreadName = 'playlist-package-thread';
 
@@ -34,7 +38,6 @@ export type PlaylistAPI = SourcesApi<SourceApiBase> & {
     activate: (url: string) => void;
   };
 };
-
 
 const sourceVideoChange = (sourceReferences: SourceReferences) =>
   createTask('playlist-source-change-on-end', function (video: VideoElementAtom, ctx: ContextWithState) {
@@ -78,12 +81,7 @@ export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyO
 
     sourcesContext.effects.state.subscribe(sourcesContext, sourceReferences, sourcesChangeTask);
   },
-  [
-    'logger',
-    'core-effects',
-    'core-state-atoms',
-    'source-references',
-  ],
+  ['logger', 'core-effects', 'core-state-atoms', 'source-references'],
 );
 
 function createPlaylistAPI(ctx: ContextWithState, sourceReferences: SourceReferences, api: PlaylistAPI) {

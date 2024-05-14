@@ -1,4 +1,4 @@
-import { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
+import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
 import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
