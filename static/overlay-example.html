@@ -140,7 +140,7 @@
       // Make sure to use the Events Effect for event listeners. This ensures,
       // that there will be no dangling event subscribers if execution of the
       // parent Task stops.
-      events.subscribe(overlay, 'click', () => {
+      events.subscribe(context, overlay, 'click', () => {
         logger.log('Hiding overlay and unmuting video...');
 
         video.muted = false;
