@@ -235,9 +235,9 @@
         const sourceUrl = getSourceUrl();
         if (!sourceUrl) return;
 
-        const playbackApi = player.sources.add({resources: [{url: sourceUrl}]}, {attach: true, playback: {autoplay: true, muted: true}});
+        const sourceApi = player.sources.add({resources: [{url: sourceUrl}]}, {attach: true, playback: {autoplay: true, muted: true}});
 
-        playbackApi.logLevel = 1e9;
+        sourceApi.logLevel = 1e9;
         sourceUrlInput.value = '';
     }
 
