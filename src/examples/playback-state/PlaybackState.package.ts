@@ -1,5 +1,5 @@
 import { Abortable } from '@bitmovin/player-web-x/framework-types/abortable/Abortable';
-import { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
+import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
 import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
@@ -120,8 +120,12 @@ const VideoElementSubscriber = (initialAbortable?: Abortable) => createTask(
     // This ensures structured concurrency is honored, as the listeners will be automatically removed once the thread
     // has finished running.
     events.subscribe(context, video, 'timeupdate', () => state.dispatch(playbackState.onTimeupdate, video.currentTime));
-    events.subscribe(context, video, 'durationchange', () => state.dispatch(playbackState.onDurationChange, video.duration));
-    events.subscribe(context, video, 'ratechange', () => state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate));
+    events.subscribe(context, video, 'durationchange', () =>
+      state.dispatch(playbackState.onDurationChange, video.duration),
+    );
+    events.subscribe(context, video, 'ratechange', () =>
+      state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate),
+    );
     events.subscribe(context, video, 'seeking', () => state.dispatch(playbackState.onSeek));
     events.subscribe(context, video, 'seeked', () => state.dispatch(playbackState.onSeeked, isPlaying()));
     events.subscribe(context, video, 'stalled', () => state.dispatch(playbackState.onStalled));
