@@ -84,8 +84,8 @@
 
         // We'll also need access to the video element that's used to play back the stream.
         // The video element is exposed on the source state, and the source state is in turn
-        // exposed with the `source-state` component name.
-        const sourceState = context.registry.get('source-state');
+        // exposed with the `source-state-atom` component name.
+        const sourceState = context.registry.get('source-state-atom');
 
         // Let's also introduce a small utility method that allows us to easily create and
         // append the overlay to the DOM and set everything up.
@@ -106,7 +106,7 @@
         // the subscribed task will be run, thereby adding or removing the overlay.
         state.subscribe(context, sourceState.video, videoElementSubscriber);
       },
-      ['core-effects', 'source-state', 'logger'],
+      ['core-effects', 'source-state-atom', 'logger'],
     );
 
     // This function adds an overlay to the video element which displays the message.

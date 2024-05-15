@@ -1,28 +1,28 @@
 import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import { createPackage, createTask, createTaskClosure } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { CoreEffects, CoreStateAtoms } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
-import type { StateAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
-import type { VideoElementAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom';
+import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
+import type { StateAtom } from '@bitmovin/player-web-x/types/packages/core/state/Types';
+import type { CoreEffects, CoreExportNames, CoreStateAtoms } from '@bitmovin/player-web-x/types/packages/core/Types';
+import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
+import type { VideoElementAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/VideoElementAtom';
 import type {
-  SourcePackageExportNames,
+  SourceExportNames,
   SourceReference,
   SourceReferences,
-} from '@bitmovin/player-web-x/types/framework/core/source/Types';
-import type { SourceApiBase, SourcesApi } from '@bitmovin/player-web-x/types/framework/core/sources-api/Types';
-import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
-import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+} from '@bitmovin/player-web-x/types/packages/source/Types';
+import type { SourceApiBase, SourcesApi } from '@bitmovin/player-web-x/types/packages/sources-api/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
 
 export const PlaylistPackageThreadName = 'playlist-package-thread';
 
 export type PlaylistPackageDependencies = {
-  [ComponentName.Logger]: Logger;
-  [ComponentName.CoreEffects]: CoreEffects;
-  [ComponentName.CoreStateAtoms]: CoreStateAtoms;
-  [SourcePackageExportNames.SourceReferences]: SourceReferences;
+  [BundleExportNames.Logger]: Logger;
+  [CoreExportNames.CoreEffects]: CoreEffects;
+  [CoreExportNames.CoreStateAtoms]: CoreStateAtoms;
+  [SourceExportNames.SourceReferences]: SourceReferences;
 };
 
-type SourceChangeCallback = (data: { url: string, id: string, active: boolean }[]) => void;
+type SourceChangeCallback = (data: { url: string; id: string; active: boolean }[]) => void;
 
 export type PlaylistAPI = SourcesApi<SourceApiBase> & {
   playlist: {
@@ -131,7 +131,9 @@ function selectSourceByIndex(ctx: ContextWithState, index: number, sourceReferen
   const nextSourceIndex = sourceReferences.indexOf(currentSource) + index;
   const nextSource = sourceReferences[nextSourceIndex];
 
-  activateSource(ctx, currentSource as SourceReference, nextSource as SourceReference);
+  if (nextSource) {
+    activateSource(ctx, currentSource as SourceReference, nextSource as SourceReference);
+  }
 }
 
 function activateSource(ctx: ContextWithState, currentSource: SourceReference, nextSource: SourceReference) {

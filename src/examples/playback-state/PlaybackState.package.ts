@@ -1,15 +1,15 @@
-import { Abortable } from '@bitmovin/player-web-x/framework-types/abortable/Abortable';
+import type { Abortable } from '@bitmovin/player-web-x/framework-types/abortable/Abortable';
 import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
-import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/framework/core/core/state/StoreEffectFactory';
-import type { StateAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/framework/core/core/utils/Logger';
-import type { SourceStateAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/SourceStateAtom';
-import { VideoElementAtom } from '@bitmovin/player-web-x/types/framework/core/source/atoms/VideoElementAtom';
-import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
-import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
+import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/packages/core/state/StoreEffectFactory';
+import type { CoreEffects, CoreExportNames } from '@bitmovin/player-web-x/types/packages/core/Types';
+import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
+import type { SourceStateAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/SourceStateAtom';
+import type { VideoElementAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/VideoElementAtom';
+import type { SourceExportNames } from '@bitmovin/player-web-x/types/packages/source/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
 
 import type { PlaybackStateAtom } from './PlaybackStateAtom';
 import { createPlaybackStateAtom, Playback } from './PlaybackStateAtom';
@@ -17,9 +17,9 @@ import type { PlaybackStatePackageExports } from './Types';
 import { PlaybackStateExportNames } from './Types';
 
 type Dependencies = {
-  [ComponentName.Logger]: Logger;
-  [ComponentName.CoreEffects]: CoreEffects;
-  [ComponentName.SourceState]: SourceStateAtom;
+  [BundleExportNames.Logger]: Logger;
+  [CoreExportNames.CoreEffects]: CoreEffects;
+  [SourceExportNames.SourceState]: SourceStateAtom;
 };
 
 /**
@@ -29,12 +29,7 @@ type Dependencies = {
 export type PlaybackStateContext = ContextHaving<
   Dependencies,
   PlaybackStatePackageExports,
-  ContextUsing<
-    [
-      StoreEffectFactory<'playbackState', PlaybackStateAtom>,
-    ],
-    ContextWithState
-  >
+  ContextUsing<[StoreEffectFactory<'playbackState', PlaybackStateAtom>], ContextWithState>
 >;
 
 /**
@@ -57,13 +52,23 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
       .using(StoreEffectFactory('playbackState', playbackStateAtom))
       .using(EventListenerEffectFactory);
 
-    const sourceState = baseContext.registry.get('source-state');
+    const sourceState = baseContext.registry.get('source-state-atom');
     const { state } = contextWithPlaybackState.effects;
 
-    const initialVideoElementSubscriberFork = contextWithPlaybackState.fork(VideoElementSubscriber(), sourceState.video, () => true);
-    initialVideoElementSubscriberFork.catch(() => {/* */})
+    const initialVideoElementSubscriberFork = contextWithPlaybackState.fork(
+      VideoElementSubscriber(),
+      sourceState.video,
+      () => true,
+    );
+    initialVideoElementSubscriberFork.catch(() => {
+      /* */
+    });
     // Subscribe to video element being set or unset, and trigger `VideoElementSubscriber`
-    state.subscribe(contextWithPlaybackState, sourceState.video, VideoElementSubscriber(initialVideoElementSubscriberFork));
+    state.subscribe(
+      contextWithPlaybackState,
+      sourceState.video,
+      VideoElementSubscriber(initialVideoElementSubscriberFork),
+    );
 
     // Export `PlaybackStateAtom` from the package
     contextWithPlaybackState.registry.set(PlaybackStateExportNames.PlaybackStateAtom, playbackStateAtom);
@@ -89,17 +94,16 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
       }),
     );
   },
-  ['core-effects', 'source-state', 'logger'],
+  ['core-effects', 'source-state-atom', 'logger'],
 
   // Package is considered a `Task`, but we do not need to return loop in it, as it will by default it will add
   // one more step that returns loop
 );
 
-const VideoElementSubscriber = (initialAbortable?: Abortable) => createTask(
-  'video-element-subscriber',
-  (videoElementState: VideoElementAtom, context: PlaybackStateContext) => {
+const VideoElementSubscriber = (initialAbortable?: Abortable) =>
+  createTask('video-element-subscriber', (videoElementState: VideoElementAtom, context: PlaybackStateContext) => {
     if (initialAbortable) {
-      initialAbortable.abort(new Error('Aborted'))
+      initialAbortable.abort(new Error('Aborted'));
     }
     const { events, state, store } = context.effects;
     const { playbackState } = store;
@@ -138,8 +142,6 @@ const VideoElementSubscriber = (initialAbortable?: Abortable) => createTask(
     // If it had finished running, it would have removed subscribers above, as they are children of this thread
     // which was started with this task.
     return context.effects.loop(context.abortSignal);
-  },
-);
-
+  });
 
 export default PlaybackStatePackage;

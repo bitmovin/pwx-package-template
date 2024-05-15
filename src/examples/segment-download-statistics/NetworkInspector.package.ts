@@ -1,11 +1,11 @@
 import type { ContextHaving } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { EmptyObject } from '@bitmovin/player-web-x/types/BaseTypes';
-import type { CoreEffects } from '@bitmovin/player-web-x/types/framework/core/core/Core.package';
-import type { CoreUtils } from '@bitmovin/player-web-x/types/framework/core/core/utils/Types';
-import type { NetworkTask } from '@bitmovin/player-web-x/types/framework/core/network/NetworkTask';
-import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
-import type { ComponentName } from '@bitmovin/player-web-x/types/framework/Types';
+import type { CoreEffects, CoreExportNames } from '@bitmovin/player-web-x/types/packages/core/Types';
+import type { CoreUtils } from '@bitmovin/player-web-x/types/packages/core/utils/Types';
+import type { NetworkTask } from '@bitmovin/player-web-x/types/packages/network/NetworkTask';
+import type { NetworkExportNames } from '@bitmovin/player-web-x/types/packages/network/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
+import type { EmptyObject } from '@bitmovin/player-web-x/types/Types';
 
 import { CustomComponentName } from './CustomComponents';
 import type { DownloadInfoAtom } from './DownloadInfoAtom';
@@ -13,12 +13,12 @@ import { createDownloadInfoAtom } from './DownloadInfoAtom';
 import { wrapNetworkTask } from './WrappedNetworkTask';
 
 type Dependencies = {
-  [ComponentName.Utils]: CoreUtils;
-  [ComponentName.CoreEffects]: CoreEffects;
+  [CoreExportNames.Utils]: CoreUtils;
+  [CoreExportNames.CoreEffects]: CoreEffects;
 };
 
 type Exports = {
-  [ComponentName.NetworkTask]: typeof NetworkTask;
+  [NetworkExportNames.NetworkTask]: typeof NetworkTask;
   [CustomComponentName.DownloadInfoAtom]: DownloadInfoAtom;
 };
 

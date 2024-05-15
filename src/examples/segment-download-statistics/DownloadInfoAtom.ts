@@ -1,5 +1,5 @@
-import type { HttpResponse, HttpResponseType } from '@bitmovin/player-web-x/types/framework/core/network/Types';
-import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { HttpResponse, HttpResponseType } from '@bitmovin/player-web-x/types/packages/network/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
 
 export type DownloadInfo = {
   size: number;
