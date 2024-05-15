@@ -1,4 +1,4 @@
-import type { ContextWithState } from '@bitmovin/player-web-x/types/framework/core/Types';
+import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
 
 import { VideoElementEventListeners } from './VideoElementEventListeners';
 

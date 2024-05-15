@@ -1,7 +1,7 @@
 import { createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { MediaType } from '@bitmovin/player-web-x/types/framework/core/core/Constants';
-import type { DataRangesAtom } from '@bitmovin/player-web-x/types/framework/core/core/state/data-ranges/DataRangesAtom';
-import type { TimeRange } from '@bitmovin/player-web-x/types/framework/core/core/state/track/TrackAtom';
+import type { MediaType } from '@bitmovin/player-web-x/types/packages/core/Constants';
+import type { DataRangesAtom } from '@bitmovin/player-web-x/types/packages/core/state/data-ranges/DataRangesAtom';
+import type { TimeRange } from '@bitmovin/player-web-x/types/packages/core/state/track/TrackAtom';
 
 import type { BufferRangeObserverContext } from './BufferRangeObserver.package';
 

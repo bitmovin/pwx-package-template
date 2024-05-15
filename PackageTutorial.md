@@ -2,7 +2,7 @@
 
 Before we start with the details of how to write a PWX plugin, we should interest ourselves in exactly what that means.
 
-Mostly, when the word plugin is used, especially in the context of video players, one expects to see some kind of domain specific hook system. In Shaka for example, it is possible to write a XHR plugin, or a subtitle parser, or an ABR plugin.
+Mostly, when the word package is used, especially in the context of video players, one expects to see some kind of domain specific hook system. In Shaka for example, it is possible to write a XHR plugin, or a subtitle parser, or an ABR plugin.
 
 Due to the structure of PWX - a framework, upon which is built a player - plugins are in fact completely generic. They are simply packages that can expose or depend on `behaviours`.
 

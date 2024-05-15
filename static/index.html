@@ -75,6 +75,7 @@
     <script type="text/javascript" src="../out/buffer-range-observer.package.js"></script>
     <script type="text/javascript" src="../out/network-inspector.package.js"></script>
     <script type="text/javascript" src="../out/playback-state.package.js"></script>
+    <script type="text/javascript" src="../out/playlist.package.js"></script>
     <script type="text/javascript" src="../out/resize-tracker.package.js"></script>
 
     <style>
@@ -192,6 +193,11 @@
       const Player = bitmovin.playerx.Player;
       const player = Player({
         key: 'YOUR-PLAYER-KEY',
+        defaultContainer: document.getElementById('player-container'),
+        playback: {
+          autoplay: true,
+          muted: true,
+        },
       });
 
       /**
@@ -210,6 +216,8 @@
       player.packages.add(bitmovin.playerx['source'].default);
       player.packages.add(bitmovin.playerx['sources-api'].default);
       player.packages.add(bitmovin.playerx['adaptation'].default);
+
+      player.packages.add(bitmovin.playerx['playlist'].default);
 
       /**
        * Uncomment one or more of the following lines (or run them in the browser console) to add the example packages that we loaded above to the player.
@@ -253,25 +261,28 @@
         return sourceUrlInput.value;
       }
 
-      function updateActiveSources() {
-        const currentIndex = activeSourcesList.selectedIndex;
-        const activeSources = getActiveSources();
+      function updateActiveSources(activeSources) {
+        // const currentIndex = activeSourcesList.selectedIndex;
 
         while (activeSourcesList.firstChild) {
           activeSourcesList.removeChild(activeSourcesList.firstChild);
         }
 
+        let activeOption = undefined;
         activeSources.forEach(source => {
           const url = source.url;
           const option = document.createElement('option');
 
           option.innerText = getSourceName(url);
           option.value = url;
+          if (source.active) {
+            activeOption = option;
+          }
           activeSourcesList.appendChild(option);
         });
 
-        activeSourcesList.selectedIndex =
-          currentIndex < activeSourcesList.children.length ? currentIndex : activeSourcesList.children.length - 1;
+        activeSourcesList.selectedIndex = Array.from(activeSourcesList.children).indexOf(activeOption);
+        // currentIndex < activeSourcesList.children.length ? currentIndex : activeSourcesList.children.length - 1;
       }
 
       function getSelectedSource() {
@@ -285,10 +296,12 @@
         const sourceUrl = getSourceUrl();
         if (!sourceUrl) return;
 
-        const playbackApi = player.sources.add(sourceUrl);
+        const sourceApi = player.sources.add(
+          { resources: [{ url: sourceUrl }] },
+          { attach: true, playback: { autoplay: true, muted: true } },
+        );
 
-        updateActiveSources();
-        playbackApi.setLogLevel(1e9);
+        sourceApi.logLevel = 1e9;
         activeSourcesList.selectedIndex = activeSourcesList.children.length - 1;
         sourceUrlInput.value = '';
       }
@@ -301,7 +314,6 @@
         }
 
         player.sources.remove(selectedSource);
-        updateActiveSources();
       }
 
       function activateSource() {
@@ -311,7 +323,7 @@
           return;
         }
 
-        player.sources.setActive(selectedSource);
+        player.sources.attachVideo(selectedSource);
       }
 
       function updateAvailableSources() {
@@ -370,9 +382,13 @@
         video.muted = !video.muted;
       }
 
+      function subscribeToSources() {
+        player.playlist.onSourcesChange(updateActiveSources);
+      }
+
       (function main() {
         updateAvailableSources();
-        updateActiveSources();
+        subscribeToSources();
       })();
     </script>
   </body>

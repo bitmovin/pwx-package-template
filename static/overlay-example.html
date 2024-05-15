@@ -60,118 +60,121 @@
     // that is executed once all dependencies of the package have been
     // met as well as a list of component names the package depends on.
     const OverlayPackage = createPackage(
-        // This package will add an overlay to the
-        // player, so we'll call it `overlay-package`
-        'overlay-package',
-        // Every package gets a reference to the API
-        // Manager as well as a base Context that has no
-        // other effects applied.
-        (_apiManager, baseContext) => {
-            let removeOverlay = () => undefined;
+      // This package will add an overlay to the
+      // player, so we'll call it `overlay-package`
+      'overlay-package',
+      // Every package gets a reference to the API
+      // Manager as well as a base Context that has no
+      // other effects applied.
+      (_apiManager, baseContext) => {
+        let removeOverlay = () => undefined;
 
-            // As the supplied context is only a base Context, but we need both the `StateEffect`
-            // and `EventListenerEffect`, we need to get them from the registry. All base effects
-            // are exposed on the `core-effects` component.
-            const { StateEffectFactory, EventListenerEffectFactory } = baseContext.registry.get('core-effects');
+        // As the supplied context is only a base Context, but we need both the `StateEffect`
+        // and `EventListenerEffect`, we need to get them from the registry. All base effects
+        // are exposed on the `core-effects` component.
+        const { StateEffectFactory, EventListenerEffectFactory } = baseContext.registry.get('core-effects');
 
-            // We can apply both effects by calling `using(Effect)` on the context. This returns
-            // a new context with the Effects being applied.
-            const context = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
+        // We can apply both effects by calling `using(Effect)` on the context. This returns
+        // a new context with the Effects being applied.
+        const context = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
 
-            // All effects are exposed on the `effects` field of the `context`, and we can use
-            // object destructuring to get an easy-to-use reference to them
-            const { state } = context.effects;
+        // All effects are exposed on the `effects` field of the `context`, and we can use
+        // object destructuring to get an easy-to-use reference to them
+        const { state } = context.effects;
 
-            // We'll also need access to the video element that's used to play back the stream.
-            // The video element is exposed on the source state, and the source state is in turn
-            // exposed with the `source-state` component name.
-            const sourceState = context.registry.get('source-state');
+        // We'll also need access to the video element that's used to play back the stream.
+        // The video element is exposed on the source state, and the source state is in turn
+        // exposed with the `source-state-atom` component name.
+        const sourceState = context.registry.get('source-state-atom');
 
-            // Let's also introduce a small utility method that allows us to easily create and
-            // append the overlay to the DOM and set everything up.
-            const addOverlay = (video) => (removeOverlay = createAndAppendOverlay(context, video));
+        // Let's also introduce a small utility method that allows us to easily create and
+        // append the overlay to the DOM and set everything up.
+        const addOverlay = video => (removeOverlay = createAndAppendOverlay(context, video));
 
-            // In order to subscribe to the video element exposed on the source state, we need
-            // create a subscribing task first. This can be done using the `createTask` function
-            // we've imported earlier as well as the State Effect. The effect allows us to
-            // subscribe a `Task` to changes of a given `StateAtom`, with the parameter of the
-            // task being the state itself. As we want to subscribe to the video element here,
-            // let's create a task that accepts a video element as its parameter.
-            const videoElementSubscriber = createTask(
-                'video-element-subscriber',
-                video => video.element ? addOverlay(video.element) : removeOverlay(),
-            );
+        // In order to subscribe to the video element exposed on the source state, we need
+        // create a subscribing task first. This can be done using the `createTask` function
+        // we've imported earlier as well as the State Effect. The effect allows us to
+        // subscribe a `Task` to changes of a given `StateAtom`, with the parameter of the
+        // task being the state itself. As we want to subscribe to the video element here,
+        // let's create a task that accepts a video element as its parameter.
+        const videoElementSubscriber = createTask('video-element-subscriber', video =>
+          video.element ? addOverlay(video.element) : removeOverlay(),
+        );
 
-            // Finally, use the state effect to subscribe to the video element. Every time the
-            // state changes (e.g. due to a source being added or the active source changing),
-            // the subscribed task will be run, thereby adding or removing the overlay.
-            state.subscribe(context, sourceState.video, videoElementSubscriber);
-        },
-        ['core-effects', 'source-state', 'logger'],
+        // Finally, use the state effect to subscribe to the video element. Every time the
+        // state changes (e.g. due to a source being added or the active source changing),
+        // the subscribed task will be run, thereby adding or removing the overlay.
+        state.subscribe(context, sourceState.video, videoElementSubscriber);
+      },
+      ['core-effects', 'source-state-atom', 'logger'],
     );
 
     // This function adds an overlay to the video element which displays the message.
     // It returns a callback which can be used to remove the overlay again.
     function createAndAppendOverlay(context, video) {
-        // We'll create an overlay that unmutes the player when clicked. In order to
-        // do that, we'll of course have to subscribe to the overlay's `click` event.
-        // To make sure that there's no dangling event listener should e.g. the source
-        // change or be unloaded, we want to use the Events Effect to subscribe. This
-        // effect will ensure, that all event listeners are removed if execution of
-        // the package stops.
-        const { events } = context.effects;
+      // We'll create an overlay that unmutes the player when clicked. In order to
+      // do that, we'll of course have to subscribe to the overlay's `click` event.
+      // To make sure that there's no dangling event listener should e.g. the source
+      // change or be unloaded, we want to use the Events Effect to subscribe. This
+      // effect will ensure, that all event listeners are removed if execution of
+      // the package stops.
+      const { events } = context.effects;
 
-        // We also want to log some messages to the console, so while we're at it,
-        // let's get a reference to the Logger as well.
-        const logger = context.registry.get('logger');
+      // We also want to log some messages to the console, so while we're at it,
+      // let's get a reference to the Logger as well.
+      const logger = context.registry.get('logger');
 
-        const container = video.parentElement;
-        const overlay = document.createElement('div');
-        let removeOverlay = () => undefined;
+      const container = video.parentElement;
+      const overlay = document.createElement('div');
+      let removeOverlay = () => undefined;
 
-        logger.log('Creating overlay...');
+      logger.log('Creating overlay...');
 
-        overlay.innerHTML = '<span class="icon">&#128263;</span><br>Click To Unmute';
-        overlay.classList.add('unmute-overlay');
-        container.appendChild(overlay);
+      overlay.innerHTML = '<span class="icon">&#128263;</span><br>Click To Unmute';
+      overlay.classList.add('unmute-overlay');
+      container.appendChild(overlay);
 
-        video.muted = true;
-        video.controls = false;
+      video.muted = true;
+      video.controls = false;
 
-        // Make sure to use the Events Effect for event listeners. This ensures,
-        // that there will be no dangling event subscribers if execution of the
-        // parent Task stops.
-        events.subscribe(overlay, 'click', () => {
-            logger.log('Hiding overlay and unmuting video...');
+      // Make sure to use the Events Effect for event listeners. This ensures,
+      // that there will be no dangling event subscribers if execution of the
+      // parent Task stops.
+      events.subscribe(context, overlay, 'click', () => {
+        logger.log('Hiding overlay and unmuting video...');
 
-            video.muted = false;
-            video.controls = true;
+        video.muted = false;
+        video.controls = true;
 
-            removeOverlay();
-        });
+        removeOverlay();
+      });
 
-        return removeOverlay = () => {
-            try {
-                container.removeChild(overlay);
-            } catch (error) {
-                logger.warn('Failed to remove overlay, error:', error);
-            }
-        };
+      return (removeOverlay = () => {
+        try {
+          container.removeChild(overlay);
+        } catch (error) {
+          logger.warn('Failed to remove overlay, error:', error);
+        }
+      });
     }
 
     // This callback is passed to the player and acts as the main error handler for the whole
     // framework instantiation, so any unhandled errors will be displayed.
     function onError(error) {
-        const errorContainer = document.querySelector('#error-container');
+      const errorContainer = document.querySelector('#error-container');
 
-        errorContainer.innerHTML = `Uncaught framework error: ${error.name}: ${error.message.replace('\n', `<br/>`)}`;
-        errorContainer.classList.remove('d-none');
-        errorContainer.classList.remove('d-block');
+      errorContainer.innerHTML = `Uncaught framework error: ${error.name}: ${error.message.replace('\n', `<br/>`)}`;
+      errorContainer.classList.remove('d-none');
+      errorContainer.classList.remove('d-block');
     }
 
     // Make sure to add your player key here, playback will fail otherwise
-    const player = bitmovin.playerx.Player({ key: 'YOUR-PLAYER-KEY', onError });
-    const source = 'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8';
+    const player = bitmovin.playerx.Player({
+      key: 'YOUR-PLAYER-KEY',
+      defaultContainer: document.getElementById('player-container'),
+    });
+    const source =
+      'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8';
 
     // Add the overlay package to the player.
     // This should be done before adding the source so that
@@ -180,7 +183,7 @@
     player.packages.add(OverlayPackage);
 
     // Finally, load the source we want to play back
-    player.sources.add(source);
+    player.sources.add({resources: [{url: source}]}, {attach: true, playback: {autoplay: true, muted: true}});
 </script>
 </body>
 </html>
