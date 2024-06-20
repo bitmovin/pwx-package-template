@@ -142,8 +142,8 @@ function activateSource(ctx: ContextWithState, currentSource: SourceReference, n
     return;
   }
 
-  ctx.effects.state.dispatch(currentSource.state.video.clear);
-  ctx.effects.state.dispatch(nextSource.state.video.set, videoElement);
+  ctx.effects.state.dispatch(currentSource.state.video.setElement, undefined);
+  ctx.effects.state.dispatch(nextSource.state.video.setElement, videoElement);
 }
 
 export default PlaylistPackage;
