@@ -50,6 +50,6 @@
     "webpack-plugin-serve": "^1.6.0"
   },
   "dependencies": {
-    "@bitmovin/player-web-x": "^10.0.0"
+    "@bitmovin/player-web-x": "^10.1.1"
   }
 }
