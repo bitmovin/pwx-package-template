@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <title>Bitmovin Player Web X</title>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="shortcut icon" href="#" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css" />
+    <!-- Load bundle -->
+    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/bundles/playerx-hls.js"></script>
+    <!-- Load the example package files -->
+    <script type="text/javascript" src="../out/subtitle-format-detection-modify.package.js"></script>
+    <script type="text/javascript" src="../out/ttml.package.js"></script>
+
+    <style>
+      .container .row {
+        padding: 1em 0;
+      }
+
+      .form-select {
+        font-size: 1.4em;
+      }
+
+      .btn-group {
+        margin-top: 0.5em;
+        display: flex !important;
+      }
+      .logo {
+        float: left;
+        margin-right: 1em;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row">
+        <div class="col col-sm">
+          <img class="logo" src="../static/bitmovin-player-x-gradient.png" width="50" />
+          <h1>Bitmovin Player Web X Subtitles Demo</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <div id="player-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      // Instantiate the framework
+      const Player = bitmovin.playerx.Player;
+      const player = Player({
+        key: 'YOUR-PLAYER-KEY',
+        defaultContainer: document.getElementById('player-container'),
+        playback: {
+          autoplay: true,
+          muted: true,
+        },
+      });
+
+      // Add our modify package before player being used
+      player.packages.add(bitmovin.playerx['subtitle-format-detection-modify'].default);
+      player.packages.add(bitmovin.playerx['ttml'].default);
+
+      // Current source has WebVTT subtitles
+      const sourceApi = player.sources.add(
+        { resources: [{ url: 'https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8' }] },
+        { attach: true, playback: { autoplay: true, muted: true } },
+      );
+      sourceApi.logLevel = 1e9;
+
+    </script>
+  </body>
+</html>
