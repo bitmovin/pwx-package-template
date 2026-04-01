@@ -23,6 +23,7 @@ const TtmlPackage = createPackage<TTMLDependencies, TTMLExports, EmptyObject>(
     'create-subtitle-cue-map-atom',
     'source-state-atom',
     'stream-timeline',
+    'stream-data-structure-selection-groups',
   ],
 );
 

@@ -2,12 +2,12 @@ import { createTask, createTaskClosure } from '@bitmovin/player-web-x/playerx-fr
 import type { SubtitleFormatType } from '@bitmovin/player-web-x/types/packages/core/Constants';
 import type { ArrayAtom } from '@bitmovin/player-web-x/types/packages/core/state/ArrayStateAtom';
 import type { PrimitiveAtom } from '@bitmovin/player-web-x/types/packages/core/state/PrimitiveAtom';
-import type { DataOrSelfInitSegmentAtom } from '@bitmovin/player-web-x/types/packages/core/state/segment/SegmentAtom';
+import type { StreamSectionAtom } from '@bitmovin/player-web-x/types/packages/core/state/stream-timeline/StreamSectionAtom';
+import type { DataOrSelfInitSegmentAtom } from '@bitmovin/player-web-x/types/packages/stream-data-structure/segment/SegmentAtom';
 import type {
   SelectionGroupAtom,
   SubtitleSelectionGroupAtom,
-} from '@bitmovin/player-web-x/types/packages/core/state/selection-group/SelectionGroupAtom';
-import type { StreamSectionAtom } from '@bitmovin/player-web-x/types/packages/core/state/stream-timeline/StreamSectionAtom';
+} from '@bitmovin/player-web-x/types/packages/stream-data-structure/selection-group/SelectionGroupAtom';
 import type { SubtitleCueAtom } from '@bitmovin/player-web-x/types/packages/subtitles/subtitle-base/SubtitleCueAtom';
 
 import type { TTMLPackageContext } from './Types';
@@ -31,10 +31,8 @@ const StreamSequenceSubscribeTask = createTask(
     context: TTMLPackageContext,
   ) => {
     const subtitleCueMapAtom = context.registry.get('subtitle-cue-map-atom');
-    const {
-      createTimelineAtom,
-      SelectionGroups: { isSubtitleSelectionGroup },
-    } = context.registry.get('core-state-atoms');
+    const { createTimelineAtom } = context.registry.get('core-state-atoms');
+    const { isSubtitleSelectionGroup } = context.registry.get('stream-data-structure-selection-groups');
     const { subscribeAndRun } = context.registry.get('utils').State;
 
     // Ensure we are working only with subtitle selection groups

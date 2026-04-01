@@ -1,9 +1,7 @@
 import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import { createPackage, createTask, createTaskClosure } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { StateAtom } from '@bitmovin/player-web-x/types/packages/core/state/Types';
 import type { CoreEffects, CoreExportNames, CoreStateAtoms } from '@bitmovin/player-web-x/types/packages/core/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
 import type { VideoElementAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/VideoElementAtom';
 import type {
   SourceExportNames,
@@ -16,7 +14,6 @@ import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Typ
 export const PlaylistPackageThreadName = 'playlist-package-thread';
 
 export type PlaylistPackageDependencies = {
-  [BundleExportNames.Logger]: Logger;
   [CoreExportNames.CoreEffects]: CoreEffects;
   [CoreExportNames.CoreStateAtoms]: CoreStateAtoms;
   [SourceExportNames.SourceReferences]: SourceReferences;
@@ -64,7 +61,7 @@ const sourcesChangeTask = createTask(
 export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyObject, PlaylistAPI>(
   'playlist-package',
   (apiManager, ctx) => {
-    const logger = ctx.registry.get('logger');
+    const logger = ctx.effects.logger;
     const sourceReferences = ctx.registry.get('source-references');
     const { StateEffectFactory, EventListenerEffectFactory } = ctx.registry.get('core-effects');
     const sourcesContext = ctx.using(StateEffectFactory).using(EventListenerEffectFactory);
@@ -75,7 +72,7 @@ export const PlaylistPackage = createPackage<PlaylistPackageDependencies, EmptyO
 
     sourcesContext.effects.state.subscribe(sourcesContext, sourceReferences, sourcesChangeTask);
   },
-  ['logger', 'core-effects', 'core-state-atoms', 'source-references'],
+  ['core-effects', 'core-state-atoms', 'source-references'],
 );
 
 function createPlaylistAPI(ctx: ContextWithState, sourceReferences: SourceReferences, api: PlaylistAPI) {
@@ -116,7 +113,7 @@ const onSourcesChangeTask = createTaskClosure(
 function mapSourcesForCallback(references: SourceReferences) {
   return references.map(reference => {
     return {
-      url: reference.state.url,
+      url: reference.config.resources[0]?.url ?? 'unknown',
       id: reference.id,
       active: Boolean(reference.state.video.element),
     };

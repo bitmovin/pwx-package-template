@@ -3,17 +3,12 @@
  * This package will print the string `Hello World` to the console.
  */
 import { createPackage } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
 import type { EmptyObject } from '@bitmovin/player-web-x/types/Types';
 
-// In order to do so, it needs to depend on the `Logger` of the player.
 // By convention, we define dependencies of a Package in a `*Dependencies` type.
-// This one defines that this package depends on a component named "logger" of
-// type `Logger`.
-type Dependencies = {
-  [BundleExportNames.Logger]: Logger;
-};
+// This package has no registry dependencies - it only uses the logger
+// which is available via the BaseContext effects.
+type Dependencies = EmptyObject;
 
 // Similarly, we use an `*Exports` type to define the components that are
 // exported by a package. This one doesn't export anything, so we can just
@@ -38,17 +33,15 @@ type Api = EmptyObject;
 //    `*Dependencies` type.
 export const HelloWorldPackage = createPackage<Dependencies, Exports, Api>(
   'hello-world-package',
-  (apiManager, context) => {
+  (_apiManager, context) => {
     // All components that this package depends on can be acquired from the
     // `Registry`. However, components that are exposed by a package can also
     // be acquired from the `Registry`, but trying to do so before they have
     // been exposed will cause an error to be thrown.
-    const logger = context.registry.get('logger' as BundleExportNames.Logger);
-
-    // Hello World! :)
-    logger.warn('Hello World!');
+    
+    context.effects.logger.warn('Hello World!');
   },
-  ['logger' as BundleExportNames.Logger],
+  [],
 );
 
 // Finally, we also want to use a default export so that all packages can be

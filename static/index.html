@@ -13,58 +13,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css" />
 
     <!--
-    Here we load the framework core source file, followed by the packages which compose the player .
+    Here we load the HLS bundle which includes all packages needed for HLS playback.
   -->
 
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/bundles/playerx-core.js"></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-capabilities.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-segment-processing.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-container-mp4.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-data.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-network.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-translation.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-parsing.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-presentation.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-source.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-sources-api.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-adaptation.package.js"
-    ></script>
+    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/bundles/playerx-hls.js"></script>
     <!--
 
    Load the example package files
@@ -202,22 +154,10 @@
       });
 
       /**
-       * Load the player packages into the framework.
+       * Load custom example packages into the framework.
+       * The HLS bundle already includes all core player packages.
        */
       console.log('adding packages');
-      player.packages.add(bitmovin.playerx['capabilities'].default);
-      player.packages.add(bitmovin.playerx['segment-processing'].default);
-      player.packages.add(bitmovin.playerx['container-mp4'].default);
-      player.packages.add(bitmovin.playerx['data'].default);
-      player.packages.add(bitmovin.playerx['network'].default);
-      player.packages.add(bitmovin.playerx['hls-translation'].default);
-      player.packages.add(bitmovin.playerx['hls-parsing'].default);
-      player.packages.add(bitmovin.playerx['hls'].default);
-      player.packages.add(bitmovin.playerx['presentation'].default);
-      player.packages.add(bitmovin.playerx['source'].default);
-      player.packages.add(bitmovin.playerx['sources-api'].default);
-      player.packages.add(bitmovin.playerx['adaptation'].default);
-
       player.packages.add(bitmovin.playerx['playlist'].default);
 
       /**
@@ -299,7 +239,7 @@
         if (!sourceUrl) return;
 
         const sourceApi = player.sources.add(
-          { resources: [{ url: sourceUrl }] },
+          { resources: [{ url: sourceUrl, type: 'hls' }] },
           { attach: true, playback: { autoplay: true, muted: true } },
         );
 

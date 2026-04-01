@@ -15,55 +15,7 @@
       Here we load the framework core source file, followed by the packages which compose the player .
     -->
 
-    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/bundles/playerx-core.js"></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-capabilities.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-segment-processing.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-container-mp4.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-data.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-network.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-translation.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls-parsing.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-hls.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-presentation.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-source.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-sources-api.package.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="../node_modules/@bitmovin/player-web-x/packages/playerx-adaptation.package.js"
-    ></script>
+    <script type="text/javascript" src="../node_modules/@bitmovin/player-web-x/bundles/playerx-hls.js"></script>
     <script type="text/javascript" src="../out/playlist.package.js"></script>
 
     <style>
@@ -167,19 +119,6 @@
         defaultContainer: document.getElementById('player-container'),
       });
 
-      player.packages.add(bitmovin.playerx['capabilities'].default);
-      player.packages.add(bitmovin.playerx['segment-processing'].default);
-      player.packages.add(bitmovin.playerx['container-mp4'].default);
-      player.packages.add(bitmovin.playerx['data'].default);
-      player.packages.add(bitmovin.playerx['network'].default);
-      player.packages.add(bitmovin.playerx['hls-translation'].default);
-      player.packages.add(bitmovin.playerx['hls-parsing'].default);
-      player.packages.add(bitmovin.playerx['hls'].default);
-      player.packages.add(bitmovin.playerx['presentation'].default);
-      player.packages.add(bitmovin.playerx['source'].default);
-      player.packages.add(bitmovin.playerx['sources-api'].default);
-      player.packages.add(bitmovin.playerx['adaptation'].default);
-
       player.packages.add(bitmovin.playerx['playlist'].default);
 
       const allSourcesMap = {
@@ -234,7 +173,7 @@
         if (!sourceUrl) return;
 
         const sourceApi = player.sources.add(
-          { resources: [{ url: sourceUrl }] },
+          { resources: [{ url: sourceUrl, type: 'hls' }] },
           { attach: true, playback: { autoplay: true, muted: true } },
         );
 

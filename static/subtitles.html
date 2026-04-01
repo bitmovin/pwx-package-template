@@ -70,7 +70,7 @@
 
       // Current source has WebVTT subtitles
       const sourceApi = player.sources.add(
-        { resources: [{ url: 'https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8' }] },
+        { resources: [{ url: 'https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8', type: 'hls' }] },
         { attach: true, playback: { autoplay: true, muted: true } },
       );
       sourceApi.logLevel = 1e9;
