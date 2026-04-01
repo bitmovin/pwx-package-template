@@ -2,10 +2,8 @@ import type { Abortable } from '@bitmovin/player-web-x/framework-types/abortable
 import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/packages/core/state/StoreEffectFactory';
 import type { CoreEffects, CoreExportNames } from '@bitmovin/player-web-x/types/packages/core/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
 import type { SourceStateAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/SourceStateAtom';
 import type { VideoElementAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/VideoElementAtom';
 import type { SourceExportNames } from '@bitmovin/player-web-x/types/packages/source/Types';
@@ -19,7 +17,6 @@ import { createResizeTrackerStateAtom } from './ResizeTrackerStateAtom';
 type Dependencies = {
   [CoreExportNames.CoreEffects]: CoreEffects;
   [SourceExportNames.SourceState]: SourceStateAtom;
-  [BundleExportNames.Logger]: Logger;
 };
 
 export enum ResizeTrackerExportNames {
@@ -63,7 +60,7 @@ export const ResizeTrackerPackage = createPackage<Dependencies, ResizeTrackerExp
     });
     state.subscribe(contextWithVideoState, sourceState.video, VideoElementSubscriber(initial));
   },
-  ['core-effects', 'source-state-atom', 'logger'],
+  ['core-effects', 'source-state-atom'],
 );
 
 const VideoElementSubscriber = (initialAbortable?: Abortable) =>
@@ -80,7 +77,7 @@ const VideoElementSubscriber = (initialAbortable?: Abortable) =>
     const { state, store, resize } = context.effects;
     const { resizeTrackerState } = store;
 
-    const logger = context.registry.get('logger');
+    const logger = context.effects.logger;
 
     resize.subscribe(video, entry => {
       logger.log('[RT]', entry);

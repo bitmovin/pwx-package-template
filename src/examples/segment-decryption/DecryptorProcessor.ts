@@ -55,14 +55,13 @@ export function createDecryptorProcessor(
   const decryptorProcessor = createTask(
     'decryptor-processor',
     async (data: SegmentDecryptorData, context: SegmentProcessorContext) => {
-      const { state } = context.effects;
+      const { state, logger } = context.effects;
       const { merge } = context.registry.get('utils').TypedArrays;
-      const { getReadableSegmentName } = context.registry.get('core-state-atoms').Segments;
+      const { getReadableSegmentName } = context.registry.get('stream-data-structure-segments');
       const chunks: Uint8Array[] = [];
       const { blue, cyan, bold } = context.registry.get('utils').AnsiEscapeSequences;
       const logPrefix = `[${bold(blue('Decryption'))}] `;
       const segmentName = bold(cyan(getReadableSegmentName(data.segment, 1)));
-      const logger = context.registry.get('logger');
 
       logger.log(logPrefix + `Reading chunks for "${segmentName}"...`);
 

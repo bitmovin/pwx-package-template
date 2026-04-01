@@ -37,8 +37,7 @@ async function fetchEncryptionData(context: SegmentDecryptorPackageContext) {
 export const BackendRequestTask = createTask(
   'backend-request-package',
   async (encryptionDataAtom: EncryptionDataAtom, context: SegmentDecryptorPackageContext) => {
-    const { state } = context.effects;
-    const logger = context.registry.get('logger');
+    const { state, logger } = context.effects;
     const { red, bold } = context.registry.get('utils').AnsiEscapeSequences;
     const logPrefix = `[${bold(red('Backend'))}] `;
 

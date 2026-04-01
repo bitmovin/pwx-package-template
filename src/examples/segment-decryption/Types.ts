@@ -1,9 +1,7 @@
 import type { ContextHaving } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
-import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { AdaptationExportNames } from '@bitmovin/player-web-x/types/packages/adaptation/Types';
 import type { MetricsAtom } from '@bitmovin/player-web-x/types/packages/core/metrics/MetricsAtom';
 import type { CoreEffects, CoreExportNames, CoreStateAtoms } from '@bitmovin/player-web-x/types/packages/core/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
 import type { CoreUtils } from '@bitmovin/player-web-x/types/packages/core/utils/Types';
 import type { NetworkTask } from '@bitmovin/player-web-x/types/packages/network/NetworkTask';
 import type { NetworkExportNames } from '@bitmovin/player-web-x/types/packages/network/Types';
@@ -17,7 +15,6 @@ import type { EmptyObject } from '@bitmovin/player-web-x/types/Types';
 
 export type SegmentDecryptorPackageDependencies = {
   [CoreExportNames.Utils]: CoreUtils;
-  [BundleExportNames.Logger]: Logger;
   [CoreExportNames.CoreEffects]: CoreEffects;
   [CoreExportNames.CoreStateAtoms]: CoreStateAtoms;
   [SegmentProcessingExportNames.SegmentProcessorType]: typeof SegmentProcessorType;

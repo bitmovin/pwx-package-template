@@ -36,7 +36,6 @@ export const SegmentDecryptionPackage = createPackage<
   },
   [
     'utils',
-    'logger',
     'core-effects',
     'core-state-atoms',
     'segment-processor-type',

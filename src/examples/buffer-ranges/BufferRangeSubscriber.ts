@@ -1,7 +1,7 @@
 import { createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
 import type { MediaType } from '@bitmovin/player-web-x/types/packages/core/Constants';
-import type { DataRangesAtom } from '@bitmovin/player-web-x/types/packages/core/state/data-ranges/DataRangesAtom';
-import type { TimeRange } from '@bitmovin/player-web-x/types/packages/core/state/track/TrackAtom';
+import type { DataRangesAtom } from '@bitmovin/player-web-x/types/packages/streaming/atoms/DataRangesAtom';
+import type { TimeRange } from '@bitmovin/player-web-x/types/packages/stream-data-structure/track/TrackAtom';
 
 import type { BufferRangeObserverContext } from './BufferRangeObserver.package';
 
@@ -32,7 +32,7 @@ function prettyPrintBufferRanges(ranges: DataRangesAtom) {
 export const BufferRangeSubscriber = createTask(
   'buffer-range-observer',
   (ranges: DataRangesAtom, context: BufferRangeObserverContext) => {
-    const logger = context.registry.get('logger');
+    const logger = context.effects.logger;
 
     logger.warn(`Buffered ranges:\n${prettyPrintBufferRanges(ranges)}`);
   },

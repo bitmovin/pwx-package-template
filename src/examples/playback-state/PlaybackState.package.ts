@@ -2,10 +2,8 @@ import type { Abortable } from '@bitmovin/player-web-x/framework-types/abortable
 import type { EmptyObject } from '@bitmovin/player-web-x/framework-types/BaseTypes';
 import type { ContextHaving, ContextUsing } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage, createTask } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { StoreEffectFactory } from '@bitmovin/player-web-x/types/packages/core/state/StoreEffectFactory';
 import type { CoreEffects, CoreExportNames } from '@bitmovin/player-web-x/types/packages/core/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
 import type { SourceStateAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/SourceStateAtom';
 import type { VideoElementAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/VideoElementAtom';
 import type { SourceExportNames } from '@bitmovin/player-web-x/types/packages/source/Types';
@@ -17,7 +15,6 @@ import type { PlaybackStatePackageExports } from './Types';
 import { PlaybackStateExportNames } from './Types';
 
 type Dependencies = {
-  [BundleExportNames.Logger]: Logger;
   [CoreExportNames.CoreEffects]: CoreEffects;
   [SourceExportNames.SourceState]: SourceStateAtom;
 };
@@ -36,7 +33,7 @@ export type PlaybackStateContext = ContextHaving<
  * PlaybackStatePackage
  *
  * Exports `PlaybackStateAtom` which is updated inside the package to the correct state based on VideoElement events.
- * Will get executed when [source-state, core-effects, logger] are available
+ * Will get executed when [source-state, core-effects] are available
  */
 export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePackageExports, EmptyObject>(
   'playback-state-package',
@@ -78,13 +75,14 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
       contextWithPlaybackState,
       playbackStateAtom,
       createTask('playback-state-subscriber', (playbackState: PlaybackStateAtom, context: PlaybackStateContext) => {
-        const logger = context.registry.get('logger');
+        const logger = context.effects.logger;
+        const sourceUrl = sourceState.sourceConfig.resources[0]?.url ?? 'unknown';
 
         if (playbackState.state === Playback.Suspended) {
-          logger.log(`[Playback suspended]: ${sourceState.url}`);
+          logger.log(`[Playback suspended]: ${sourceUrl}`);
         } else {
           const { playhead, duration, playbackRate, state } = playbackState;
-          logger.log(`[PlaybackState changed]: ${sourceState.url}`, {
+          logger.log(`[PlaybackState changed]: ${sourceUrl}`, {
             state,
             playhead,
             duration,
@@ -94,10 +92,7 @@ export const PlaybackStatePackage = createPackage<Dependencies, PlaybackStatePac
       }),
     );
   },
-  ['core-effects', 'source-state-atom', 'logger'],
-
-  // Package is considered a `Task`, but we do not need to return loop in it, as it will by default it will add
-  // one more step that returns loop
+  ['core-effects', 'source-state-atom'],
 );
 
 const VideoElementSubscriber = (initialAbortable?: Abortable) =>
@@ -120,9 +115,6 @@ const VideoElementSubscriber = (initialAbortable?: Abortable) =>
     const isPlaying = () => !video.paused && !video.ended;
 
     state.dispatch(playbackState.onPlaybackRateChange, video.playbackRate);
-    // Using EventListenerEffect, subscribe and dispatch correct state changes.
-    // This ensures structured concurrency is honored, as the listeners will be automatically removed once the thread
-    // has finished running.
     events.subscribe(context, video, 'timeupdate', () => state.dispatch(playbackState.onTimeupdate, video.currentTime));
     events.subscribe(context, video, 'durationchange', () =>
       state.dispatch(playbackState.onDurationChange, video.duration),
@@ -138,9 +130,6 @@ const VideoElementSubscriber = (initialAbortable?: Abortable) =>
     events.subscribe(context, video, 'pause', () => state.dispatch(playbackState.onPaused));
     events.subscribe(context, video, 'ended', () => state.dispatch(playbackState.onEnded));
 
-    // Returning loop ensures this task never finishes running until it is terminated by the parent.
-    // If it had finished running, it would have removed subscribers above, as they are children of this thread
-    // which was started with this task.
     return context.effects.loop(context.abortSignal);
   });
 

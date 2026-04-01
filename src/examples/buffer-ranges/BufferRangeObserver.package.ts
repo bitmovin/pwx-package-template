@@ -1,20 +1,15 @@
 import type { ContextHaving } from '@bitmovin/player-web-x/framework-types/execution-context/Types';
 import { createPackage } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { BundleExportNames } from '@bitmovin/player-web-x/types/bundles/Types';
 import type { CoreEffects, CoreExportNames } from '@bitmovin/player-web-x/types/packages/core/Types';
-import type { Logger } from '@bitmovin/player-web-x/types/packages/core/utils/Logger';
-import type { SourceStateAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/SourceStateAtom';
-import type { SourceExportNames } from '@bitmovin/player-web-x/types/packages/source/Types';
+import type { StreamingState } from '@bitmovin/player-web-x/types/packages/streaming/Types';
 import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
 import type { EmptyObject } from '@bitmovin/player-web-x/types/Types';
 
 import { BufferRangeSubscriber } from './BufferRangeSubscriber';
 
 type Dependencies = {
-  [BundleExportNames.Logger]: Logger;
   [CoreExportNames.CoreEffects]: CoreEffects;
-  [SourceExportNames.SourceState]: SourceStateAtom;
-};
+} & StreamingState;
 
 type Exports = EmptyObject;
 
@@ -27,12 +22,12 @@ export const BufferRangeObserverPackage = createPackage<Dependencies, Exports, A
   (_, baseContext) => {
     const { StateEffectFactory, EventListenerEffectFactory } = baseContext.registry.get('core-effects');
     const context = baseContext.using(StateEffectFactory).using(EventListenerEffectFactory);
-    const sourceState = context.registry.get('source-state-atom');
+    const streamingState = context.registry.get('streaming-state');
     const { state } = context.effects;
 
-    state.subscribe(context, sourceState.dataRanges, BufferRangeSubscriber);
+    state.subscribe(context, streamingState.dataRanges, BufferRangeSubscriber);
   },
-  ['core-effects', 'source-state-atom'],
+  ['core-effects', 'streaming-state'],
 );
 
 export default BufferRangeObserverPackage;
