@@ -1,0 +1,266 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0c4a6e, #000);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+/* Scroll-snap container */
+#feed {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Each video slot fills the viewport */
+.feed-item {
+    width: 100%;
+    height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card with gradient border */
+.feed-card {
+    height: 100vh;
+    aspect-ratio: 1/2;
+    max-width: 100%;
+    border-radius: 1.5rem;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(209,213,219,0.5), rgba(156,163,175,0.3), transparent);
+    transform: scale(0.97);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Inner card */
+.feed-card-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+}
+
+/* Video slot — poster is its background, video sits on top */
+.feed-video {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background-size: cover;
+    background-position: center;
+}
+
+.feed-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Top gradient overlay */
+.feed-overlay-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5rem;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* Bottom gradient overlay */
+.feed-overlay-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* Username / profile section (top) */
+.feed-username {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80%;
+    height: 4rem;
+    padding: 1.25rem 1.5rem;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.feed-username img {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Video info section (bottom) */
+.feed-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    padding-bottom: 2.5rem;
+    color: white;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.feed-info-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.feed-info-desc {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Per-video progress bar */
+.feed-progress {
+    position: absolute;
+    bottom: 2rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    z-index: 50;
+    overflow: hidden;
+}
+
+.feed-progress-bar {
+    height: 100%;
+    background: #0ea5e9;
+    opacity: 0.8;
+    border-radius: 2px;
+    transition: width 150ms linear;
+    width: 0;
+}
+
+/* Play/pause tap indicator */
+.tap-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    z-index: 100;
+    pointer-events: none;
+    transition: transform 0.15s ease, opacity 0.3s ease;
+}
+
+.tap-indicator.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.tap-indicator.fade {
+    opacity: 0;
+}
+
+/* Progress dots (right side) */
+#progress-dots {
+    position: fixed;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    z-index: 10;
+}
+
+.progress-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.progress-dot.active {
+    background: #0ea5e9;
+    transform: scale(1.4);
+}
+
+/* Logo */
+#logo {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#logo img {
+    height: 2rem;
+}
+
+/* Mute button */
+#mute-button {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hidden player container — just for initialization */
+#player-container {
+    position: fixed;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
