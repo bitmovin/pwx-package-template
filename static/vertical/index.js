@@ -75,7 +75,7 @@ function getPreloadWindow(index) {
     return indices;
 }
 
-player.sources.events.on('video-attached', function(event) {
+player.events.on('video-attached', function(event) {
     event.videoElement.removeAttribute('controls');
     event.videoElement.setAttribute('playsinline', '');
     event.videoElement.setAttribute('webkit-playsinline', '');

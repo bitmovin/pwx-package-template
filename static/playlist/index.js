@@ -77,7 +77,7 @@ function ensureSource(index, attach, loadControl) {
     return SOURCES[index].sourceApi;
 }
 
-player.sources.events.on('video-attached', function(event) {
+player.events.on('video-attached', function(event) {
     event.videoElement.removeAttribute('controls');
     event.videoElement.setAttribute('playsinline', '');
     event.videoElement.setAttribute('webkit-playsinline', '');
