@@ -75,14 +75,12 @@ function getPreloadWindow(index) {
     return indices;
 }
 
-function removeControls(source) {
-    if (!source.video) {
-        requestAnimationFrame(function() { removeControls(source); });
-        return;
-    }
-    source.video.removeAttribute('controls');
-    source.video.loop = true;
-}
+player.sources.events.on('video-attached', function(event) {
+    event.videoElement.removeAttribute('controls');
+    event.videoElement.setAttribute('playsinline', '');
+    event.videoElement.setAttribute('webkit-playsinline', '');
+    event.videoElement.loop = true;
+});
 
 function updateProgressDots(index) {
     document.querySelectorAll('.progress-dot').forEach(function(dot) {
@@ -132,7 +130,6 @@ function goToSource(index) {
         if (window.indexOf(i) === -1) source.loadControl = LC_NOTHING;
     });
 
-    removeControls(activeSource);
     updateProgressDots(index);
 }
 

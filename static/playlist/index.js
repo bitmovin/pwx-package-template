@@ -77,13 +77,11 @@ function ensureSource(index, attach, loadControl) {
     return SOURCES[index].sourceApi;
 }
 
-function removeControls(source) {
-    if (!source.video) {
-        requestAnimationFrame(function() { removeControls(source); });
-        return;
-    }
-    source.video.removeAttribute('controls');
-}
+player.sources.events.on('video-attached', function(event) {
+    event.videoElement.removeAttribute('controls');
+    event.videoElement.setAttribute('playsinline', '');
+    event.videoElement.setAttribute('webkit-playsinline', '');
+});
 
 function updateUI(index) {
     contentTitle.textContent = SOURCES[index].title;
@@ -175,7 +173,6 @@ function goTo(index) {
     ensureSource(modulo(activeIndex + 1, SOURCES.length)).loadControl = LC_METADATA;
     ensureSource(modulo(activeIndex - 1, SOURCES.length)).loadControl = LC_METADATA;
 
-    removeControls(activeSource);
     updateUI(index);
 }
 
