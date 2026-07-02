@@ -1,5 +1,5 @@
 import { createTaskClosure } from '@bitmovin/player-web-x/playerx-framework-utils';
-import type { NetworkAtom } from '@bitmovin/player-web-x/types/packages/core/network/NetworkAtom';
+import type { NetworkAtom } from '@bitmovin/player-web-x/types/packages/network/NetworkAtom';
 import type { NetworkTask } from '@bitmovin/player-web-x/types/packages/network/NetworkTask';
 import type {
   BaseRequestConfig,

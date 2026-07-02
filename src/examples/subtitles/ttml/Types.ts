@@ -4,13 +4,13 @@ import type { Constants } from '@bitmovin/player-web-x/types/packages/core/Const
 import type { StreamTimelineAtom } from '@bitmovin/player-web-x/types/packages/core/state/stream-timeline/StreamTimelineMapAtom';
 import type { CoreEffects, CoreExportNames, CoreStateAtoms } from '@bitmovin/player-web-x/types/packages/core/Types';
 import type { CoreUtils } from '@bitmovin/player-web-x/types/packages/core/utils/Types';
+import type { DataExportNames } from '@bitmovin/player-web-x/types/packages/data/Types';
 import type { SourceStateAtom } from '@bitmovin/player-web-x/types/packages/source/atoms/SourceStateAtom';
 import type { SourceExportNames } from '@bitmovin/player-web-x/types/packages/source/Types';
 import type { StreamDataStructureSelectionGroups } from '@bitmovin/player-web-x/types/packages/stream-data-structure/selection-group/Exports';
 import type { createSubtitleCueAtom } from '@bitmovin/player-web-x/types/packages/subtitles/subtitle-base/SubtitleCueAtom';
 import type { SubtitleCueMapAtom } from '@bitmovin/player-web-x/types/packages/subtitles/subtitle-base/SubtitleCueMapAtom';
 import type { SubtitleBaseExportNames } from '@bitmovin/player-web-x/types/packages/subtitles/subtitle-base/Types';
-import type { DataExportNames } from '@bitmovin/player-web-x/types/packages/data/Types';
 import type { ContextWithState } from '@bitmovin/player-web-x/types/packages/Types';
 
 export type TTMLDependencies = {
