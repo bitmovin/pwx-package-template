@@ -38,7 +38,7 @@ export const HelloWorldPackage = createPackage<Dependencies, Exports, Api>(
     // `Registry`. However, components that are exposed by a package can also
     // be acquired from the `Registry`, but trying to do so before they have
     // been exposed will cause an error to be thrown.
-    
+
     context.effects.logger.warn('Hello World!');
   },
   [],
